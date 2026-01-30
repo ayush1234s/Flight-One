@@ -1,101 +1,92 @@
 "use client";
 
-import { useState } from "react";
-import { Mail, Ticket, AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { auth } from "@/firebase/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
-const TicketsPage = () => {
-  const [connected, setConnected] = useState(false);
-  const [loading, setLoading] = useState(false);
+export default function TicketsPage() {
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [tickets, setTickets] = useState<any[]>([]);
 
-  const connectGmail = async () => {
-    setConnected(true);
-    setLoading(true);
-
-    // REAL CASE:
-    // backend Gmail API will run here
-    // but since no flight emails exist → empty result
-
-    setTimeout(() => {
-      setTickets([]);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
       setLoading(false);
-    }, 1500);
-  };
 
+      // ✅ only google login users
+      if (u?.providerData[0]?.providerId === "google.com") {
+        // simulate fetch
+        setTimeout(() => {
+          setTickets([]); // no ticket found
+        }, 1000);
+      }
+    });
+
+    return () => unsub();
+  }, []);
+
+  if (loading) {
+    return <div className="p-20 text-center">Loading...</div>;
+  }
+
+  // ❌ not logged in
+  if (!user) {
+    return (
+      <div className="p-24 text-center">
+        <h2 className="text-2xl font-bold mb-3">
+          Login Required
+        </h2>
+        <p className="text-gray-400">
+          Please login to view your flight tickets.
+        </p>
+      </div>
+    );
+  }
+
+  // ❌ email-password login
+  if (user.providerData[0]?.providerId !== "google.com") {
+    return (
+      <div className="p-24 text-center">
+        <h2 className="text-xl font-bold mb-3">
+          Google Login Required
+        </h2>
+        <p className="text-gray-400">
+          To fetch flight tickets, please login using Google.
+        </p>
+      </div>
+    );
+  }
+
+  // ✅ google login but no tickets
+  if (tickets.length === 0) {
+    return (
+      <div className="p-24 text-center">
+        <h2 className="text-xl font-bold mb-3">
+          No Tickets Found
+        </h2>
+        <p className="text-gray-400">
+          Your Gmail does not contain any flight booking emails.
+        </p>
+      </div>
+    );
+  }
+
+  // ✅ tickets found
   return (
-    <div className="max-w-5xl mx-auto px-6 py-24">
-
-      <h1 className="text-3xl font-bold mb-2">
-        My Flight Tickets
+    <div className="max-w-4xl mx-auto py-24">
+      <h1 className="text-3xl font-bold mb-6">
+        Your Tickets
       </h1>
 
-      <p className="text-gray-400 mb-10">
-        Fetch your booked flight tickets using your email securely.
-      </p>
-
-      {/* CONNECT GMAIL */}
-      {!connected && (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-10 text-center">
-
-          <Mail size={40} className="mx-auto text-sky-400 mb-4" />
-
-          <h2 className="text-xl font-semibold mb-2">
-            Connect your Gmail
-          </h2>
-
-          <p className="text-gray-400 text-sm mb-6">
-            We only scan flight-related email metadata.
-            Your personal emails remain private.
-          </p>
-
-          <button
-            onClick={connectGmail}
-            className="bg-sky-500 px-6 py-3 rounded-lg text-black font-semibold hover:bg-sky-400"
-          >
-            Connect Gmail
-          </button>
+      {tickets.map((t, i) => (
+        <div
+          key={i}
+          className="bg-white/5 border border-white/10 p-4 rounded-xl mb-4"
+        >
+          Flight Ticket #{i + 1}
         </div>
-      )}
-
-      {/* LOADING */}
-      {connected && loading && (
-        <div className="mt-16 text-center text-gray-400">
-          Scanning your email for flight tickets...
-        </div>
-      )}
-
-      {/* NO TICKETS FOUND */}
-      {connected && !loading && tickets.length === 0 && (
-        <div className="mt-16 bg-white/5 border border-white/10 rounded-2xl p-10 text-center">
-
-          <AlertCircle size={40} className="mx-auto text-yellow-400 mb-4" />
-
-          <h2 className="text-xl font-semibold mb-2">
-            No Flight Tickets Found
-          </h2>
-
-          <p className="text-gray-400 text-sm">
-            Your email does not contain any flight booking information.
-          </p>
-        </div>
-      )}
-
-      {/* FUTURE REAL TICKETS */}
-      {tickets.length > 0 && (
-        <div className="mt-10 space-y-4">
-          {tickets.map((ticket) => (
-            <div
-              key={ticket.id}
-              className="bg-white/5 border border-white/10 rounded-xl p-6"
-            >
-              <Ticket className="text-sky-400 mb-2" />
-              {ticket.snippet}
-            </div>
-          ))}
-        </div>
-      )}
+      ))}
     </div>
   );
-};
-
-export default TicketsPage;
+}
