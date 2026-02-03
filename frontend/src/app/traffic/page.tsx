@@ -1,0 +1,177 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { Plane } from "lucide-react";
+
+const REFRESH_TIME = 60;
+
+const TrafficPage = () => {
+  const [flights, setFlights] = useState<any[]>([]);
+  const [filtered, setFiltered] = useState<any[]>([]);
+  const [country, setCountry] = useState("");
+  const [search, setSearch] = useState("");
+  const [seconds, setSeconds] = useState(REFRESH_TIME);
+  const [loading, setLoading] = useState(true);
+
+  const fetchFlights = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/opensky", { cache: "no-store" });
+      const data = await res.json();
+
+      const list = data.states?.slice(0, 80) || []; // 👈 more data
+      setFlights(list);
+      setFiltered(list);
+      setSeconds(REFRESH_TIME);
+    } catch (e) {
+      setFlights([]);
+      setFiltered([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFlights();
+
+    const refresh = setInterval(fetchFlights, 60000);
+    const timer = setInterval(() => {
+      setSeconds((s) => (s > 0 ? s - 1 : REFRESH_TIME));
+    }, 1000);
+
+    return () => {
+      clearInterval(refresh);
+      clearInterval(timer);
+    };
+  }, []);
+
+  // FILTER LOGIC (UNCHANGED)
+  useEffect(() => {
+    let data = flights;
+
+    if (country) {
+      data = data.filter((f) =>
+        f[2]?.toLowerCase().includes(country.toLowerCase())
+      );
+    }
+
+    if (search) {
+      data = data.filter((f) =>
+        f[1]?.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    setFiltered(data);
+  }, [country, search, flights]);
+
+  return (
+    <div className="max-w-7xl mx-auto px-6 py-24">
+
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-bold">
+            Live Flight Tracking
+          </h1>
+
+          {/* 🔴 LIVE BLINK */}
+          <div className="flex items-center gap-2 text-red-500 font-semibold text-sm">
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+            </span>
+            LIVE
+          </div>
+        </div>
+
+        <div className="text-sm text-gray-400">
+          Refresh in <span className="text-sky-400">{seconds}s</span>
+        </div>
+      </div>
+
+      {/* FILTERS */}
+      <div className="grid md:grid-cols-2 gap-4 mb-10">
+        <input
+          className="input"
+          placeholder="Filter by Country (e.g. India)"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        />
+
+        <input
+          className="input"
+          placeholder="Search by Flight Code"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* SHIMMER LOADING */}
+      {loading && (
+        <div className="grid md:grid-cols-2 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-32 rounded-xl bg-white/5 border border-white/10 animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* FLIGHTS */}
+      {!loading && (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((f, i) => (
+            <div
+              key={i}
+              className="bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-6 hover:border-sky-400/40 transition"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-lg">
+                  {f[1]?.trim() || "Unknown Flight"}
+                </h3>
+
+                {/* ✈️ PLANE ROTATION */}
+                <Plane
+                  size={22}
+                  className="text-sky-400 transition-transform duration-1000"
+                  style={{
+                    transform: `rotate(${f[10] || 0}deg)`,
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 text-sm text-gray-300 gap-2">
+                <p><span className="text-gray-400">Country:</span> {f[2]}</p>
+                <p>
+                  <span className="text-gray-400">Status:</span>{" "}
+                  {f[8] ? (
+                    <span className="text-yellow-400">On Ground</span>
+                  ) : (
+                    <span className="text-green-400">Airborne</span>
+                  )}
+                </p>
+                <p>
+                  <span className="text-gray-400">Altitude:</span>{" "}
+                  {Math.round(f[7] || 0)} m
+                </p>
+                <p>
+                  <span className="text-gray-400">Speed:</span>{" "}
+                  {Math.round((f[9] || 0) * 3.6)} km/h
+                </p>
+              </div>
+            </div>
+          ))}
+
+          {filtered.length === 0 && (
+            <p className="text-gray-400 col-span-full text-center">
+              No flights match your filter.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default TrafficPage;
