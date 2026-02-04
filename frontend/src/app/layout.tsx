@@ -19,11 +19,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-white">
+    <html lang="en" className="scroll-smooth">
+      <body className="bg-slate-950 text-white antialiased">
         <AuthProvider>
           <Navbar />
-          <main className="pt-20 min-h-screen">{children}</main>
+          <main className="pt-20 min-h-screen">
+            {children}
+          </main>
           <Footer />
         </AuthProvider>
       </body>
