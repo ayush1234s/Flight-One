@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plane, Search, Ticket, MapPinned, Car, Radar } from "lucide-react";
+import AirplaneBg from "./components/hero/AirplaneBg";
 
 const Shimmer = () => (
   <div className="animate-pulse">
@@ -28,7 +29,10 @@ const HomePage = () => {
 
       {/* HERO */}
       <div className="relative">
+        <AirplaneBg /> {/* ✈️ animated background */}
+
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.15),transparent_60%)]" />
+
         <div className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center">
 
           <div>
