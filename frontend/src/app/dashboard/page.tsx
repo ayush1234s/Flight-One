@@ -58,6 +58,14 @@ const DashboardPage = () => {
             >
               Fetch My Tickets
             </a>
+
+            {/* ✅ ONLY ADDITION */}
+            <a
+              href="/estimator"
+              className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
+            >
+              Estimate Total Trip Cost
+            </a>
           </div>
         </div>
 

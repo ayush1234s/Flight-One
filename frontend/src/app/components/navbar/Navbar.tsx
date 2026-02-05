@@ -152,13 +152,13 @@ export default function Navbar() {
             </div>
           )}
 
-{/* MOBILE MENU ICON */}
-<button
-  className="block text-sm transition-all duration-200 text-gray-300 hover:text-white"
-  onClick={() => setOpen(!open)}
->
-  {open ? <X /> : <Menu />}
-</button>
+          {/* MOBILE MENU ICON */}
+          <button
+            className="md:hidden text-white hover:text-sky-400 transition"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X /> : <Menu />}
+          </button>
         </div>
       </div>
 
