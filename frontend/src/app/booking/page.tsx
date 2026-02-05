@@ -105,15 +105,16 @@ export default function BookingPage() {
 
         {/* SEARCH */}
         <div className="grid md:grid-cols-5 gap-4 mb-8">
-          <select className="input" value={from} onChange={(e) => setFrom(e.target.value)}>
+          <select className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none"
+                                     value={from} onChange={(e) => setFrom(e.target.value)}>
             {AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code}>
+              <option key={a.code} value={a.code} className="bg-slate-900 text-white">
                 {a.code} - {a.name}
               </option>
             ))}
           </select>
 
-          <select className="input" value={to} onChange={(e) => setTo(e.target.value)}>
+          <select className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none" value={to} onChange={(e) => setTo(e.target.value)}>
             {AIRPORTS.map((a) => (
               <option key={a.code} value={a.code}>
                 {a.code} - {a.name}
