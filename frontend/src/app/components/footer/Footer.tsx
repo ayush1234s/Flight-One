@@ -50,6 +50,9 @@ export default function Footer() {
           <p className="mt-2">
             Educational project — real booking handled by partner platforms.
           </p>
+          <p className="mt-2">
+            Made by ❤️ Ayush Srivastava.
+          </p>
         </div>
       </div>
     </footer>

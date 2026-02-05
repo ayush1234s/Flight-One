@@ -189,7 +189,7 @@ export default function BookingPage() {
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as FilterType)}
-          className="input w-full"
+          className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none"
         >
           <option value="price">Lowest Price</option>
           <option value="duration">Fastest Flight</option>
