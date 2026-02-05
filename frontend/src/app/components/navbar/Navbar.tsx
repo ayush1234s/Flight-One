@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Plane, ChevronDown } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContent";
@@ -23,7 +24,6 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const profileRef = useRef<HTMLDivElement>(null);
 
-  // close profile dropdown when clicking outside
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -39,7 +39,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-slate-950/90 backdrop-blur border-b border-white/10">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-slate-950/80 backdrop-blur-xl border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between relative">
 
         {/* LOGO */}
@@ -59,34 +59,39 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`text-sm font-medium transition ${
-                  active
+                className={`relative text-sm font-medium transition-colors duration-200 ${active
                     ? "text-sky-400"
                     : "text-gray-300 hover:text-white"
-                }`}
+                  } group`}
               >
                 {link.name}
+
+                <span
+                  className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-sky-400 transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                />
               </Link>
+
             );
           })}
         </div>
 
         {/* RIGHT SIDE */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
 
           {/* DESKTOP AUTH */}
           {!user ? (
             <div className="hidden md:flex gap-3">
               <Link
                 href="/login"
-                className="border border-white/20 px-4 py-1.5 rounded-lg text-sm hover:bg-white/10"
+                className="border border-white/20 px-4 py-1.5 rounded-lg text-sm hover:bg-white/10 transition"
               >
                 Login
               </Link>
 
               <Link
                 href="/signup"
-                className="bg-sky-500 text-black px-4 py-1.5 rounded-lg text-sm font-semibold"
+                className="bg-sky-500 text-black px-4 py-1.5 rounded-lg text-sm font-semibold hover:bg-sky-400 transition"
               >
                 Sign Up
               </Link>
@@ -97,32 +102,37 @@ export default function Navbar() {
               {/* PROFILE BUTTON */}
               <button
                 onClick={() => setProfileOpen(!profileOpen)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 rounded-full px-1.5 py-1 hover:bg-white/5 transition"
               >
                 {user.photoURL ? (
-                  <img
+                  <Image
                     src={user.photoURL}
                     alt="profile"
-                    className="w-9 h-9 rounded-full border border-white/20"
+                    width={36}
+                    height={36}
+                    className="rounded-full border border-white/20"
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-sky-500 text-black flex items-center justify-center font-bold uppercase">
-                    {user.email?.charAt(0)}
+                    {(user.displayName || user.email || "U")[0]}
                   </div>
                 )}
 
-                <ChevronDown size={18} />
+                <ChevronDown
+                  size={16}
+                  className={`transition ${profileOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {/* DROPDOWN */}
               {profileOpen && (
-                <div className="absolute right-0 mt-3 w-56 bg-slate-900 border border-white/10 rounded-xl overflow-hidden shadow-xl">
+                <div className="absolute right-0 mt-3 w-56 bg-slate-900/95 backdrop-blur border border-white/10 rounded-xl overflow-hidden shadow-2xl">
 
                   <div className="px-4 py-3 border-b border-white/10">
-                    <p className="text-sm font-medium">
+                    <p className="text-sm font-medium truncate">
                       {user.displayName || "User"}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-400 truncate">
                       {user.email}
                     </p>
                   </div>
@@ -133,7 +143,7 @@ export default function Navbar() {
                       setProfileOpen(false);
                       setOpen(false);
                     }}
-                    className="w-full text-left px-4 py-3 text-sm hover:bg-white/10 text-red-400"
+                    className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 text-red-400 transition"
                   >
                     Logout
                   </button>
@@ -142,26 +152,29 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* MOBILE MENU ICON */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <X /> : <Menu />}
-          </button>
+{/* MOBILE MENU ICON */}
+<button
+  className="block text-sm transition-all duration-200 text-gray-300 hover:text-white"
+  onClick={() => setOpen(!open)}
+>
+  {open ? <X /> : <Menu />}
+</button>
         </div>
       </div>
 
       {/* MOBILE MENU */}
       {open && (
-        <div className="md:hidden bg-slate-900 border-t border-white/10 px-6 py-4 space-y-4">
+        <div className="md:hidden bg-slate-900/95 backdrop-blur border-t border-white/10 px-6 py-4 space-y-4">
 
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
               onClick={() => setOpen(false)}
-              className="block text-gray-300 hover:text-white"
+              className={`block text-sm transition ${pathname === link.href
+                  ? "text-sky-400"
+                  : "text-gray-300 hover:text-white"
+                }`}
             >
               {link.name}
             </Link>
@@ -174,7 +187,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="flex-1 text-center border border-white/20 py-2 rounded-lg"
+                  className="flex-1 text-center border border-white/20 py-2 rounded-lg hover:bg-white/10 transition"
                 >
                   Login
                 </Link>
@@ -182,7 +195,7 @@ export default function Navbar() {
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
-                  className="flex-1 text-center bg-sky-500 text-black py-2 rounded-lg font-semibold"
+                  className="flex-1 text-center bg-sky-500 text-black py-2 rounded-lg font-semibold hover:bg-sky-400 transition"
                 >
                   Sign Up
                 </Link>
@@ -193,7 +206,7 @@ export default function Navbar() {
                   logout();
                   setOpen(false);
                 }}
-                className="w-full border border-white/20 py-2 rounded-lg text-red-400"
+                className="w-full border border-white/20 py-2 rounded-lg text-red-400 hover:bg-white/5 transition"
               >
                 Logout
               </button>
