@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, Plane, ChevronDown } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContent";
 
-const navLinks = [
+const baseLinks = [
   { name: "Home", href: "/" },
   { name: "Booking", href: "/booking" },
   { name: "Tickets", href: "/tickets" },
@@ -23,6 +23,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const profileRef = useRef<HTMLDivElement>(null);
+
+  // 🔥 Home link dynamic (logged in → dashboard, guest → landing)
+  const navLinks = baseLinks.map((link) =>
+    link.name === "Home"
+      ? { ...link, href: user ? "/dashboard" : "/" }
+      : link
+  );
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -44,7 +51,7 @@ export default function Navbar() {
 
         {/* LOGO */}
         <Link
-          href="/"
+          href={user ? "/dashboard" : "/"}
           className="flex items-center gap-2 text-xl font-bold text-sky-400 hover:text-sky-300 transition"
         >
           <Plane className="w-6 h-6" />
@@ -59,19 +66,19 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`relative text-sm font-medium transition-colors duration-200 ${active
+                className={`relative text-sm font-medium transition-colors duration-200 ${
+                  active
                     ? "text-sky-400"
                     : "text-gray-300 hover:text-white"
-                  } group`}
+                } group`}
               >
                 {link.name}
-
                 <span
-                  className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-sky-400 transition-all duration-300 ${active ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
+                  className={`absolute -bottom-1 left-0 h-[2px] rounded-full bg-sky-400 transition-all duration-300 ${
+                    active ? "w-full" : "w-0 group-hover:w-full"
+                  }`}
                 />
               </Link>
-
             );
           })}
         </div>
@@ -127,7 +134,6 @@ export default function Navbar() {
               {/* DROPDOWN */}
               {profileOpen && (
                 <div className="absolute right-0 mt-3 w-56 bg-slate-900/95 backdrop-blur border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-
                   <div className="px-4 py-3 border-b border-white/10">
                     <p className="text-sm font-medium truncate">
                       {user.displayName || "User"}
@@ -165,16 +171,16 @@ export default function Navbar() {
       {/* MOBILE MENU */}
       {open && (
         <div className="md:hidden bg-slate-900/95 backdrop-blur border-t border-white/10 px-6 py-4 space-y-4">
-
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
               onClick={() => setOpen(false)}
-              className={`block text-sm transition ${pathname === link.href
+              className={`block text-sm transition ${
+                pathname === link.href
                   ? "text-sky-400"
                   : "text-gray-300 hover:text-white"
-                }`}
+              }`}
             >
               {link.name}
             </Link>

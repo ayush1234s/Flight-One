@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { Plane, Search, Ticket, MapPinned, Car, Radar } from "lucide-react";
 import AirplaneBg from "@/app/components/hero/AirplaneBg";
 
-
 const Shimmer = () => (
   <div className="animate-pulse">
     <div className="h-10 w-2/3 bg-white/10 rounded mb-4" />
@@ -43,7 +42,7 @@ const DashboardPage = () => {
   return (
     <section className="bg-slate-950 text-white overflow-hidden">
 
-      {/* 🔥 HERO SECTION (COPIED FROM HOME PAGE) */}
+      {/* 🔥 HERO SECTION */}
       <div className="relative">
         <AirplaneBg />
 
@@ -57,6 +56,13 @@ const DashboardPage = () => {
             ) : (
               <>
                 <h1 className="text-5xl font-bold leading-tight tracking-tight">
+                  Welcome 👋
+                </h1>
+                <h2 className="text-3xl font-bold leading-tight tracking-tight block text-sky-400">
+                  {userName}
+                </h2>
+
+                <h1 className="mt-4 text-5xl font-bold leading-tight tracking-tight">
                   Your All-in-One Platform for{" "}
                   <span className="text-sky-400">Smart Air Travel</span>
                 </h1>
@@ -81,6 +87,13 @@ const DashboardPage = () => {
                   >
                     Fetch My Tickets
                   </a>
+
+                  <a
+                    href="/estimator"
+                    className="border border-white/20 px-6 py-3 rounded-xl hover:bg-white/10 transition"
+                  >
+                    Estimate Total Trip Cost
+                  </a>
                 </div>
               </>
             )}
@@ -103,58 +116,14 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* ⬇️⬇️⬇️ TERA ORIGINAL DASHBOARD CODE (UNCHANGED) ⬇️⬇️⬇️ */}
+      {/* WHAT YOU CAN DO */}
+      <div className="max-w-7xl mx-auto px-6 py-28">
+        <h2 className="text-4xl font-bold text-center mb-12">
+          What You Can Do
+        </h2>
 
-      {/* HERO */}
-      <div className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center">
-
-        <div>
-          <h1 className="text-5xl font-bold leading-tight">
-            Welcome 👋
-          </h1>
-
-          <p className="mt-3 text-lg text-gray-300">
-            {userName}
-          </p>
-
-          <p className="mt-6 text-gray-400 text-lg leading-relaxed">
-            Flight One is an intelligent air travel assistant designed to
-            simplify the entire flight journey. From discovering flights to
-            retrieving tickets, tracking live flights, planning airport routes,
-            and arranging local transport — everything is available in one
-            secure platform.
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-4">
-            <a
-              href="/booking"
-              className="bg-sky-500 px-6 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition"
-            >
-              Search Flights
-            </a>
-
-            <a
-              href="/tickets"
-              className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
-            >
-              Fetch My Tickets
-            </a>
-
-            <a
-              href="/estimator"
-              className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
-            >
-              Estimate Total Trip Cost
-            </a>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-          <h3 className="text-xl font-semibold mb-4">
-            What You Can Do
-          </h3>
-
-          <ul className="space-y-3 text-gray-300 text-sm">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-10">
+          <ul className="grid md:grid-cols-2 gap-6 text-gray-300 text-sm">
             <li>✈️ Search and compare available flights</li>
             <li>📩 Retrieve booked tickets using email or PNR</li>
             <li>🕒 View past, ongoing and upcoming flights</li>
