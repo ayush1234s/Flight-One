@@ -2,11 +2,27 @@
 
 import { useAuth } from "@/app/context/AuthContent";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Plane, Search, Ticket, MapPinned, Car, Radar } from "lucide-react";
+import AirplaneBg from "@/app/components/hero/AirplaneBg";
+
+
+const Shimmer = () => (
+  <div className="animate-pulse">
+    <div className="h-10 w-2/3 bg-white/10 rounded mb-4" />
+    <div className="h-4 w-full bg-white/10 rounded mb-2" />
+    <div className="h-4 w-5/6 bg-white/10 rounded mb-6" />
+    <div className="flex gap-4">
+      <div className="h-10 w-32 bg-white/10 rounded" />
+      <div className="h-10 w-32 bg-white/10 rounded" />
+    </div>
+  </div>
+);
 
 const DashboardPage = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [heroLoading, setHeroLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -14,20 +30,85 @@ const DashboardPage = () => {
     }
   }, [user, loading, router]);
 
+  useEffect(() => {
+    const t = setTimeout(() => setHeroLoading(false), 800);
+    return () => clearTimeout(t);
+  }, []);
+
   if (loading) return null;
 
-  // ✅ Name logic
   const userName =
     user?.displayName || user?.email || "User";
 
   return (
-    <section className="bg-slate-950 text-white">
+    <section className="bg-slate-950 text-white overflow-hidden">
+
+      {/* 🔥 HERO SECTION (COPIED FROM HOME PAGE) */}
+      <div className="relative">
+        <AirplaneBg />
+
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(56,189,248,0.15),transparent_60%)]" />
+
+        <div className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center">
+
+          <div>
+            {heroLoading ? (
+              <Shimmer />
+            ) : (
+              <>
+                <h1 className="text-5xl font-bold leading-tight tracking-tight">
+                  Your All-in-One Platform for{" "}
+                  <span className="text-sky-400">Smart Air Travel</span>
+                </h1>
+
+                <p className="mt-6 text-gray-400 text-lg leading-relaxed">
+                  Flight One unifies flight discovery, ticket access, live flight
+                  tracking, airport cabs, and route planning into one secure
+                  travel companion.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <a
+                    href="/booking"
+                    className="bg-sky-500 px-6 py-3 rounded-xl text-black font-semibold hover:bg-sky-400 transition"
+                  >
+                    Search Flights
+                  </a>
+
+                  <a
+                    href="/tickets"
+                    className="border border-white/20 px-6 py-3 rounded-xl hover:bg-white/10 transition"
+                  >
+                    Fetch My Tickets
+                  </a>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 shadow-2xl">
+            <h3 className="text-xl font-semibold mb-6">
+              What Flight One Offers
+            </h3>
+
+            <ul className="grid grid-cols-2 gap-4 text-sm text-gray-300">
+              <li className="flex items-center gap-2"><Search size={16} /> Flight search & comparison</li>
+              <li className="flex items-center gap-2"><Ticket size={16} /> Email & PNR ticket retrieval</li>
+              <li className="flex items-center gap-2"><Radar size={16} /> Live flight traffic</li>
+              <li className="flex items-center gap-2"><Car size={16} /> Cab comparison</li>
+              <li className="flex items-center gap-2"><MapPinned size={16} /> Live route maps</li>
+              <li className="flex items-center gap-2"><Plane size={16} /> Smart travel insights</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* ⬇️⬇️⬇️ TERA ORIGINAL DASHBOARD CODE (UNCHANGED) ⬇️⬇️⬇️ */}
 
       {/* HERO */}
       <div className="max-w-7xl mx-auto px-6 py-28 grid md:grid-cols-2 gap-16 items-center">
 
         <div>
-          {/* ✅ FIXED WELCOME */}
           <h1 className="text-5xl font-bold leading-tight">
             Welcome 👋
           </h1>
@@ -59,7 +140,6 @@ const DashboardPage = () => {
               Fetch My Tickets
             </a>
 
-            {/* ✅ ONLY ADDITION */}
             <a
               href="/estimator"
               className="border border-white/20 px-6 py-3 rounded-lg hover:bg-white/10 transition"
