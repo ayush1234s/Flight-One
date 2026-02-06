@@ -28,6 +28,7 @@ const TrafficPage = () => {
       }
       if (data.__error) {
         setError("Live flight data temporarily unavailable.");
+        console.log("OpenSky API error:", data.message);
       }
 
       const list = data.states?.slice(0, 80) || [];
