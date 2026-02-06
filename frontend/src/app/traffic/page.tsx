@@ -12,26 +12,18 @@ const TrafficPage = () => {
   const [search, setSearch] = useState("");
   const [seconds, setSeconds] = useState(REFRESH_TIME);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   const fetchFlights = async () => {
     try {
       setLoading(true);
-      setError("");
-
       const res = await fetch("/api/opensky", { cache: "no-store" });
       const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.error || "OpenSky failed");
-      }
 
       const list = data.states?.slice(0, 80) || [];
       setFlights(list);
       setFiltered(list);
       setSeconds(REFRESH_TIME);
-    } catch (e: any) {
-      setError("Live flight data temporarily unavailable. Retrying...");
+    } catch (e) {
       setFlights([]);
       setFiltered([]);
     } finally {
@@ -42,8 +34,7 @@ const TrafficPage = () => {
   useEffect(() => {
     fetchFlights();
 
-    const refresh = setInterval(fetchFlights, 120000); // 2 min
-
+    const refresh = setInterval(fetchFlights, 60000);
     const timer = setInterval(() => {
       setSeconds((s) => (s > 0 ? s - 1 : REFRESH_TIME));
     }, 1000);
@@ -77,9 +68,11 @@ const TrafficPage = () => {
     <div className="max-w-7xl mx-auto px-6 py-24">
 
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold">Live Flight Tracking</h1>
+          <h1 className="text-3xl font-bold">
+            Live Flight Tracking
+          </h1>
 
           {/* 🔴 LIVE BLINK */}
           <div className="flex items-center gap-2 text-red-500 font-semibold text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20">
@@ -92,17 +85,9 @@ const TrafficPage = () => {
         </div>
 
         <div className="text-xs text-gray-400">
-          Auto refresh in{" "}
-          <span className="text-sky-400 font-medium">{seconds}s</span>
+          Auto refresh in <span className="text-sky-400 font-medium">{seconds}s</span>
         </div>
       </div>
-
-      {/* ERROR */}
-      {error && (
-        <div className="mb-6 text-sm text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-4 py-2 rounded-lg">
-          ⚠️ {error}
-        </div>
-      )}
 
       {/* FILTERS */}
       <div className="grid md:grid-cols-2 gap-4 mb-10">
@@ -157,10 +142,7 @@ const TrafficPage = () => {
               </div>
 
               <div className="grid grid-cols-2 text-xs text-gray-300 gap-2">
-                <p>
-                  <span className="text-gray-400">Country:</span>{" "}
-                  {f[2] || "—"}
-                </p>
+                <p><span className="text-gray-400">Country:</span> {f[2] || "—"}</p>
                 <p>
                   <span className="text-gray-400">Status:</span>{" "}
                   {f[8] ? (
