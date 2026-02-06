@@ -26,7 +26,7 @@ async function getAccessToken() {
   const data = await res.json();
 
   accessToken = data.access_token;
-  tokenExpiry = Date.now() + data.expires_in * 1000;
+  tokenExpiry = Date.now() + data.expires_in * 1000 - 60_000; // 1 min buffer
 
   return accessToken;
 }
@@ -41,6 +41,13 @@ export async function GET(req: Request) {
     const adults = searchParams.get("adults") || "1";
     const travelClass = searchParams.get("class") || "ECONOMY";
 
+    if (!origin || !destination || !date) {
+      return NextResponse.json(
+        { error: "Missing required params" },
+        { status: 400 }
+      );
+    }
+
     const token = await getAccessToken();
 
     const url = `https://test.api.amadeus.com/v2/shopping/flight-offers?originLocationCode=${origin}&destinationLocationCode=${destination}&departureDate=${date}&adults=${adults}&travelClass=${travelClass}&currencyCode=INR&max=20`;
@@ -49,12 +56,18 @@ export async function GET(req: Request) {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      cache: "no-store", // 🔥 important
     });
 
     const data = await res.json();
 
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0",
+      },
+    });
   } catch (err) {
+    console.error("Amadeus error:", err);
     return NextResponse.json(
       { error: "Failed to fetch flights" },
       { status: 500 }
