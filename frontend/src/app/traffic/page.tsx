@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plane } from "lucide-react";
+import { Plane, RefreshCw } from "lucide-react";
 
-const REFRESH_TIME = 60;
+const REFRESH_TIME = 15 * 60; // 15 minutes in seconds
 
 const TrafficPage = () => {
   const [flights, setFlights] = useState<any[]>([]);
@@ -12,38 +12,22 @@ const TrafficPage = () => {
   const [search, setSearch] = useState("");
   const [seconds, setSeconds] = useState(REFRESH_TIME);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [cached, setCached] = useState(false);
 
   const fetchFlights = async () => {
     try {
       setLoading(true);
-      setError("");
-
-      const res = await fetch("https://opensky-network.org/api/states/all");
-
-      if(!res.ok){
-        console.log("OpenSky response not ok");
-        throw new Error("OpenSky response not ok");
-      }
+      const res = await fetch("/api/opensky", { cache: "no-store" });
       const data = await res.json();
-
-      // Handle fallback flags from route.ts
-      // if (data.__fallback) {
-      //   setError("Showing last known data (Live API unstable).");
-      // }
-      // if (data.__error) {
-      //   setError("Live flight data temporarily unavailable.");
-      //   console.log("OpenSky API error:", data.message);
-      // }
 
       const list = data.states?.slice(0, 80) || [];
       setFlights(list);
       setFiltered(list);
+      setCached(data.cached);
+
       setSeconds(REFRESH_TIME);
-    } catch (e: any) {
-      setError("Unable to load live flight data.");
-      setFlights([]);
-      setFiltered([]);
+    } catch (e) {
+      console.log(e);
     } finally {
       setLoading(false);
     }
@@ -52,7 +36,7 @@ const TrafficPage = () => {
   useEffect(() => {
     fetchFlights();
 
-    const refresh = setInterval(fetchFlights, 60000);
+    const refresh = setInterval(fetchFlights, REFRESH_TIME * 1000);
     const timer = setInterval(() => {
       setSeconds((s) => (s > 0 ? s - 1 : REFRESH_TIME));
     }, 1000);
@@ -63,7 +47,7 @@ const TrafficPage = () => {
     };
   }, []);
 
-  // FILTER LOGIC (unchanged)
+  // FILTER LOGIC
   useEffect(() => {
     let data = flights;
 
@@ -84,13 +68,11 @@ const TrafficPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-24">
-
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold">Live Flight Tracking</h1>
 
-          {/* 🔴 LIVE BLINK */}
           <div className="flex items-center gap-2 text-red-500 font-semibold text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
@@ -98,20 +80,25 @@ const TrafficPage = () => {
             </span>
             LIVE
           </div>
+
+          {cached && (
+            <span className="text-xs text-yellow-400">(Cached)</span>
+          )}
         </div>
 
-        <div className="text-xs text-gray-400">
+        <div className="flex items-center gap-3 text-xs text-gray-400">
           Auto refresh in{" "}
           <span className="text-sky-400 font-medium">{seconds}s</span>
+
+          <button
+            onClick={fetchFlights}
+            className="flex items-center gap-1 px-3 py-1 rounded-md border border-white/10 hover:border-sky-400/40 hover:text-sky-400 transition"
+          >
+            <RefreshCw size={14} />
+            Refresh Now
+          </button>
         </div>
       </div>
-
-      {/* ERROR */}
-      {error && (
-        <div className="mb-6 text-sm text-yellow-400 bg-yellow-400/10 border border-yellow-400/20 px-4 py-2 rounded-lg">
-          ⚠️ {error}
-        </div>
-      )}
 
       {/* FILTERS */}
       <div className="grid md:grid-cols-2 gap-4 mb-10">
@@ -130,7 +117,7 @@ const TrafficPage = () => {
         />
       </div>
 
-      {/* SHIMMER LOADING */}
+      {/* LOADING */}
       {loading && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 9 }).map((_, i) => (
@@ -155,21 +142,15 @@ const TrafficPage = () => {
                   {f[1]?.trim() || "Unknown Flight"}
                 </h3>
 
-                {/* ✈️ PLANE ROTATION */}
                 <Plane
                   size={20}
                   className="text-sky-400 transition-transform duration-1000 group-hover:scale-110"
-                  style={{
-                    transform: `rotate(${f[10] || 0}deg)`,
-                  }}
+                  style={{ transform: `rotate(${f[10] || 0}deg)` }}
                 />
               </div>
 
               <div className="grid grid-cols-2 text-xs text-gray-300 gap-2">
-                <p>
-                  <span className="text-gray-400">Country:</span>{" "}
-                  {f[2] || "—"}
-                </p>
+                <p><span className="text-gray-400">Country:</span> {f[2] || "—"}</p>
                 <p>
                   <span className="text-gray-400">Status:</span>{" "}
                   {f[8] ? (
@@ -192,12 +173,7 @@ const TrafficPage = () => {
 
           {filtered.length === 0 && !loading && (
             <div className="col-span-full text-center py-16">
-              <p className="text-gray-400">
-                No flights match your filter.
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                Try clearing filters or searching a different flight code.
-              </p>
+              <p className="text-gray-400">No flights match your filter.</p>
             </div>
           )}
         </div>
