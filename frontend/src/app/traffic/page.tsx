@@ -1,33 +1,60 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Plane, RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
-const REFRESH_TIME = 15 * 60; // 15 minutes
+type Flight = {
+  flightNumber: string;
+  airline: { name: string; iata: string; icao: string; country?: string };
+  country?: string; // derived/best-effort
+  position: { lat: number | null; lng: number | null };
+  altitudeM: number | null;
+  speedKmh: number | null;
+  direction: number | null;
+  status: string;
+  departure: {
+    iata: string;
+    scheduled: string | null;
+    actual: string | null;
+    terminal: string | null;
+    gate: string | null;
+    delayMin: number | null;
+  };
+  arrival: {
+    iata: string;
+    scheduled: string | null;
+    actual: string | null;
+    terminal: string | null;
+    gate: string | null;
+    delayMin: number | null;
+  };
+  aircraft: { type: string; registration: string; manufacturer: string };
+};
 
-type Flight = any[];
-
-const TrafficPage = () => {
+export default function TrafficPage() {
   const [flights, setFlights] = useState<Flight[]>([]);
-  const [filtered, setFiltered] = useState<Flight[]>([]);
-  const [country, setCountry] = useState("");
   const [search, setSearch] = useState("");
-  const [seconds, setSeconds] = useState(REFRESH_TIME);
+  const [airline, setAirline] = useState("");
+  const [country, setCountry] = useState("");
+  const [airborneOnly, setAirborneOnly] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [cached, setCached] = useState(false);
 
   const fetchFlights = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/aviationstack", { cache: "no-store" });
+      const res = await fetch("/api/airlabs", { cache: "no-store" });
       const data = await res.json();
 
-      const list: Flight[] = data.states || [];
+      // derive country best-effort
+      const enriched = (data.flights || []).map((f: any) => ({
+        ...f,
+        country:
+          f.country ||
+          f.airline?.country ||
+          (f.airline?.name?.toLowerCase().includes("india") ? "India" : null) ||
+          null,
+      }));
 
-      setFlights(list);
-      setFiltered(list);
-      setCached(!!data.cached);
-      setSeconds(REFRESH_TIME);
+      setFlights(enriched);
     } catch (e) {
       console.error(e);
     } finally {
@@ -37,163 +64,121 @@ const TrafficPage = () => {
 
   useEffect(() => {
     fetchFlights();
-
-    const refresh = setInterval(fetchFlights, REFRESH_TIME * 1000);
-    const timer = setInterval(() => {
-      setSeconds((s) => (s > 0 ? s - 1 : REFRESH_TIME));
-    }, 1000);
-
-    return () => {
-      clearInterval(refresh);
-      clearInterval(timer);
-    };
+    const t = setInterval(fetchFlights, 15000);
+    return () => clearInterval(t);
   }, []);
 
-  // FILTER LOGIC
-  useEffect(() => {
-    let data = flights;
+  const filtered = useMemo(() => {
+    return flights.filter((f) => {
+      if (airborneOnly && !["en-route", "active"].includes(f.status)) return false;
 
-    if (country) {
-      data = data.filter((f) =>
-        (f[2] || "").toLowerCase().includes(country.toLowerCase())
-      );
-    }
+      if (search) {
+        const q = search.toLowerCase();
+        const inFlight = f.flightNumber?.toLowerCase().includes(q);
+        const inAirline = f.airline?.name?.toLowerCase().includes(q);
+        if (!inFlight && !inAirline) return false;
+      }
 
-    if (search) {
-      data = data.filter((f) =>
-        (f[1] || "").toLowerCase().includes(search.toLowerCase())
-      );
-    }
+      if (airline && !f.airline?.name?.toLowerCase().includes(airline.toLowerCase())) {
+        return false;
+      }
 
-    setFiltered(data);
-  }, [country, search, flights]);
+      if (country) {
+        const c = (f.country || "").toLowerCase();
+        if (!c.includes(country.toLowerCase())) return false;
+      }
 
-  const getStatus = (f: Flight) => {
-    // If altitude or speed present, consider airborne
-    const altitude = f[7] || 0;
-    const speedMs = f[9] || 0;
-
-    if (altitude > 100 || speedMs > 50 / 3.6) {
-      return <span className="text-green-400">Airborne</span>;
-    }
-    return <span className="text-yellow-400">On Ground</span>;
-  };
+      return true;
+    });
+  }, [flights, search, airline, country, airborneOnly]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-24">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold">Live Flight Tracking</h1>
+    <div className="max-w-7xl mx-auto px-6 py-20">
+      <h1 className="text-3xl font-bold mb-4">Live Flights (Real-time)</h1>
 
-          <div className="flex items-center gap-2 text-red-500 font-semibold text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-            </span>
-            LIVE
-          </div>
-
-          {cached && (
-            <span className="text-xs text-yellow-400">(Cached)</span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3 text-xs text-gray-400">
-          Auto refresh in{" "}
-          <span className="text-sky-400 font-medium">{seconds}s</span>
-
-          <button
-            onClick={fetchFlights}
-            className="flex items-center gap-1 px-3 py-1 rounded-md border border-white/10 hover:border-sky-400/40 hover:text-sky-400 transition"
-          >
-            <RefreshCw size={14} />
-            Refresh Now
-          </button>
-        </div>
-      </div>
-
-      {/* FILTERS */}
-      <div className="grid md:grid-cols-2 gap-4 mb-10">
+      {/* Filters */}
+      <div className="grid md:grid-cols-4 gap-3 mb-6">
         <input
           className="input"
-          placeholder="Filter by Country (e.g. India)"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-        />
-
-        <input
-          className="input"
-          placeholder="Search by Flight Code (e.g. AI202)"
+          placeholder="Search Flight / Airline (AI202, IndiGo)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        <input
+          className="input"
+          placeholder="Filter Airline (IndiGo)"
+          value={airline}
+          onChange={(e) => setAirline(e.target.value)}
+        />
+        <input
+          className="input"
+          placeholder="Filter Country (India, UAE)"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
+        />
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={airborneOnly}
+            onChange={(e) => setAirborneOnly(e.target.checked)}
+          />
+          Airborne only
+        </label>
       </div>
 
-      {/* LOADING */}
-      {loading && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-36 rounded-xl bg-white/5 border border-white/10 animate-pulse"
-            />
-          ))}
-        </div>
-      )}
+      {/* List */}
+      {loading && <p className="text-gray-400">Loading flights…</p>}
 
-      {/* FLIGHTS */}
       {!loading && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((f, i) => (
-            <div
-              key={i}
-              className="group bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-5 hover:border-sky-400/40 hover:shadow-sky-500/10 hover:shadow-lg transition"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-base truncate">
-                  {f[1]?.trim() || "Unknown Flight"}
+            <div key={i} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="font-semibold">
+                  {f.flightNumber} • {f.airline.name}
                 </h3>
-
-                <Plane
-                  size={20}
-                  className="text-sky-400 transition-transform duration-1000 group-hover:scale-110"
-                  style={{ transform: `rotate(${f[10] || 0}deg)` }}
-                />
+                <span className="text-xs text-gray-400">
+                  {f.airline.iata}/{f.airline.icao}
+                </span>
               </div>
 
-              <div className="grid grid-cols-2 text-xs text-gray-300 gap-2">
+              <p className="text-xs text-gray-400 mb-1">
+                Country: <b className="text-white">{f.country || "—"}</b>
+              </p>
+
+              <p className="text-xs text-gray-400">
+                {f.departure.iata} → {f.arrival.iata}
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-300 mt-2">
+                <p>Status: <b className="text-green-400">{f.status}</b></p>
+                <p>Altitude: {f.altitudeM ?? "—"} m</p>
+                <p>Speed: {f.speedKmh ?? "—"} km/h</p>
+                <p>Direction: {f.direction ?? "—"}°</p>
+                <p>Aircraft: {f.aircraft.type}</p>
+                <p>Reg: {f.aircraft.registration}</p>
+                <p>Dep T/G: {f.departure.terminal ?? "—"} / {f.departure.gate ?? "—"}</p>
+                <p>Arr T/G: {f.arrival.terminal ?? "—"} / {f.arrival.gate ?? "—"}</p>
+                <p>Delay: {f.departure.delayMin ?? 0} min</p>
                 <p>
-                  <span className="text-gray-400">Country:</span>{" "}
-                  {f[2] || "—"}
-                </p>
-                <p>
-                  <span className="text-gray-400">Status:</span> {getStatus(f)}
-                </p>
-                <p>
-                  <span className="text-gray-400">Altitude:</span>{" "}
-                  {Math.round(f[7] || 0)} m
-                </p>
-                <p>
-                  <span className="text-gray-400">Speed:</span>{" "}
-                  {Math.round((f[9] || 0) * 3.6)} km/h
+                  Times:{" "}
+                  {f.departure.scheduled
+                    ? new Date(f.departure.scheduled).toLocaleTimeString()
+                    : "—"}{" "}
+                  /{" "}
+                  {f.departure.actual
+                    ? new Date(f.departure.actual).toLocaleTimeString()
+                    : "—"}
                 </p>
               </div>
             </div>
           ))}
 
-          {filtered.length === 0 && !loading && (
-            <div className="col-span-full text-center py-16">
-              <p className="text-gray-400">No flights match your filter.</p>
-              <p className="text-gray-500">
-                Free API has limited live data. Try refreshing after some time.
-              </p>
-            </div>
+          {filtered.length === 0 && (
+            <p className="col-span-full text-gray-400">No flights match your filters.</p>
           )}
         </div>
       )}
     </div>
   );
-};
-
-export default TrafficPage;
+}
