@@ -31,6 +31,7 @@ export default function BookingPage() {
   const [flights, setFlights] = useState<any[]>([]);
   const [compareAll, setCompareAll] = useState(false);
   const [filter, setFilter] = useState<FilterType>("price");
+  const [searching, setSearching] = useState(false); // 👈 loading state
 
   /* ================= SEARCH ================= */
   const searchFlights = async () => {
@@ -39,13 +40,21 @@ export default function BookingPage() {
       return;
     }
 
-    const res = await fetch(
-      `/api/amadeus?from=${from}&to=${to}&date=${date}&adults=${adults}`
-    );
-    const data = await res.json();
+    try {
+      setSearching(true); // 👈 start loading
 
-    setFlights(data.data || []);
-    setCompareAll(false);
+      const res = await fetch(
+        `/api/amadeus?from=${from}&to=${to}&date=${date}&adults=${adults}`
+      );
+      const data = await res.json();
+
+      setFlights(data.data || []);
+      setCompareAll(false);
+    } catch (e) {
+      alert("Failed to fetch flights");
+    } finally {
+      setSearching(false); // 👈 stop loading
+    }
   };
 
   /* ================= ENRICH ================= */
@@ -95,26 +104,36 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-[1fr_520px] gap-10">
+    <div className="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-[1fr_420px] gap-12">
 
-      {/* ================= LEFT SIDE ================= */}
+      {/* ================= LEFT ================= */}
       <div>
-        <h1 className="text-3xl font-bold mb-6">
+        <h1 className="text-3xl font-bold mb-2">
           Flight Booking & Comparison
         </h1>
+        <p className="text-gray-400 mb-8">
+          Find the best flights and compare prices in real-time
+        </p>
 
-        {/* SEARCH */}
-        <div className="grid md:grid-cols-5 gap-4 mb-8">
-          <select className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none"
-                                     value={from} onChange={(e) => setFrom(e.target.value)}>
+        {/* SEARCH BAR */}
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5 grid md:grid-cols-5 gap-4 mb-10">
+          <select
+            className="w-full rounded-lg bg-slate-900 text-white border border-white/10 px-4 py-3 focus:ring-2 focus:ring-sky-400/40 outline-none"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+          >
             {AIRPORTS.map((a) => (
-              <option key={a.code} value={a.code} className="bg-slate-900 text-white">
+              <option key={a.code} value={a.code}>
                 {a.code} - {a.name}
               </option>
             ))}
           </select>
 
-          <select className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none" value={to} onChange={(e) => setTo(e.target.value)}>
+          <select
+            className="w-full rounded-lg bg-slate-900 text-white border border-white/10 px-4 py-3 focus:ring-2 focus:ring-sky-400/40 outline-none"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+          >
             {AIRPORTS.map((a) => (
               <option key={a.code} value={a.code}>
                 {a.code} - {a.name}
@@ -123,14 +142,14 @@ export default function BookingPage() {
           </select>
 
           <input
-            className="input"
+            className="w-full rounded-lg bg-slate-900 text-white border border-white/10 px-4 py-3 focus:ring-2 focus:ring-sky-400/40 outline-none"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
 
           <input
-            className="input"
+            className="w-full rounded-lg bg-slate-900 text-white border border-white/10 px-4 py-3 focus:ring-2 focus:ring-sky-400/40 outline-none"
             type="number"
             min={1}
             value={adults}
@@ -139,27 +158,35 @@ export default function BookingPage() {
 
           <button
             onClick={searchFlights}
-            className="bg-sky-500 text-black font-semibold rounded-lg"
+            disabled={searching}
+            className="bg-sky-500 text-black font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Search
+            {searching ? (
+              <>
+                <span className="animate-spin h-5 w-5 border-2 border-black border-t-transparent rounded-full"></span>
+                Searching...
+              </>
+            ) : (
+              "Search"
+            )}
           </button>
         </div>
 
-        {/* FLIGHTS LIST */}
-        <div className="space-y-6">
+        {/* FLIGHTS */}
+        <div className="space-y-5">
           {flights.map((flight, i) => {
             const airline = flight.itineraries[0].segments[0].carrierCode;
 
             return (
               <div
                 key={i}
-                className="bg-white/5 border border-white/10 rounded-xl p-6"
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-sky-400/40 transition"
               >
-                <div className="flex justify-between">
-                  <h2 className="font-semibold">
-                    Airline: {airline}
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="font-semibold text-lg">
+                    {airline}
                   </h2>
-                  <span className="font-bold text-sky-400">
+                  <span className="font-bold text-sky-400 text-lg">
                     ₹{flight.price.total}
                   </span>
                 </div>
@@ -172,9 +199,9 @@ export default function BookingPage() {
                   onClick={() =>
                     window.open(getAirlineSite(airline), "_blank")
                   }
-                  className="mt-4 bg-white/10 px-4 py-2 rounded-lg"
+                  className="mt-4 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition"
                 >
-                  Book
+                  Book on Airline Site
                 </button>
               </div>
             );
@@ -182,14 +209,13 @@ export default function BookingPage() {
         </div>
       </div>
 
-      {/* ================= RIGHT SIDE ================= */}
+      {/* ================= RIGHT ================= */}
       <div className="sticky top-28 space-y-4">
 
-        {/* FILTER */}
         <select
           value={filter}
           onChange={(e) => setFilter(e.target.value as FilterType)}
-          className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-400/40 appearance-none"
+          className="w-full rounded-xl bg-slate-900 text-white border border-white/10 px-4 py-3 focus:ring-2 focus:ring-sky-400/40 outline-none"
         >
           <option value="price">Lowest Price</option>
           <option value="duration">Fastest Flight</option>
@@ -197,7 +223,6 @@ export default function BookingPage() {
           <option value="ontime">Best On-Time</option>
         </select>
 
-        {/* COMPARE BUTTON */}
         <button
           disabled={flights.length === 0 || loading}
           onClick={() => {
@@ -208,19 +233,17 @@ export default function BookingPage() {
             }
             setCompareAll(true);
           }}
-          className="w-full bg-sky-500 text-black py-3 rounded-lg font-semibold disabled:opacity-40"
+          className="w-full bg-sky-500 text-black py-3 rounded-lg font-semibold hover:bg-sky-400 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Compare All Flights
         </button>
 
-        {/* NOT LOGGED IN MESSAGE */}
         {!user && (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-gray-400 text-sm">
+          <div className="bg-white/5 border border-white/10 rounded-xl p-5 text-gray-400 text-sm">
             Login required to compare flights.
           </div>
         )}
 
-        {/* COMPARISON TABLE */}
         {compareAll && user && (
           <div className="overflow-x-auto border border-white/10 rounded-xl bg-white/5">
             <table className="w-full text-sm">
@@ -244,9 +267,7 @@ export default function BookingPage() {
                       i === 0 ? "bg-green-500/10" : ""
                     }`}
                   >
-                    <td className="p-3 font-semibold">
-                      #{i + 1}
-                    </td>
+                    <td className="p-3 font-semibold">#{i + 1}</td>
                     <td className="p-3">
                       {f.airline}
                       {i === 0 && (
@@ -262,7 +283,7 @@ export default function BookingPage() {
                     <td className="p-3">
                       <button
                         onClick={() => window.open(f.site, "_blank")}
-                        className="bg-white/10 px-3 py-1 rounded-md"
+                        className="bg-white/10 hover:bg-white/20 px-3 py-1 rounded-md transition"
                       >
                         Book
                       </button>

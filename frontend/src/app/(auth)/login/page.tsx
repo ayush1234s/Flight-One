@@ -13,9 +13,11 @@ const LoginPage = () => {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: any) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const res = await signInWithEmailAndPassword(auth, email, password);
@@ -28,6 +30,8 @@ const LoginPage = () => {
       router.push("/dashboard");
     } catch {
       alert("Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,48 +45,61 @@ const LoginPage = () => {
   };
 
   return (
-    <>
-      <h2 className="text-xl font-semibold text-center mb-4">
+    <div className="w-full max-w-md mx-auto">
+      <h2 className="text-2xl font-semibold text-center mb-2">
         Welcome back
       </h2>
+      <p className="text-center text-gray-400 mb-6 text-sm">
+        Login to manage your trips
+      </p>
 
-      {/* GOOGLE LOGIN */}
-      <button
-        onClick={handleGoogleLogin}
-        className="w-full border border-white/20 py-3 rounded-lg flex items-center justify-center gap-3 hover:bg-white/10 transition mb-4"
-      >
-        <img
-          src="https://www.svgrepo.com/show/475656/google-color.svg"
-          className="w-5"
-          alt="google"
-        />
-        Continue with Google
-      </button>
-
-      <div className="text-center text-gray-500 text-sm mb-4">
-        or login with email
-      </div>
-
-      {/* EMAIL LOGIN */}
-      <form onSubmit={handleLogin} className="space-y-5 animate-fade-in">
+      <form onSubmit={handleLogin} className="space-y-4">
         <input
           type="email"
           placeholder="Email address"
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 outline-none"
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 outline-none focus:border-sky-400"
         />
 
         <input
           type="password"
           placeholder="Password"
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 outline-none"
+          className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 outline-none focus:border-sky-400"
         />
 
-        <button className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition">
-          Login
+        <button
+          disabled={loading}
+          className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+        >
+          {loading ? (
+            <span className="animate-spin h-5 w-5 border-2 border-black border-t-transparent rounded-full"></span>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3 my-6">
+        <div className="h-px flex-1 bg-white/10" />
+        <span className="text-xs text-gray-400">or continue with</span>
+        <div className="h-px flex-1 bg-white/10" />
+      </div>
+
+      {/* Google small icon button */}
+      <div className="flex justify-center">
+        <button
+          onClick={handleGoogleLogin}
+          className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition"
+        >
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            className="w-5"
+            alt="google"
+          />
+        </button>
+      </div>
 
       <div className="mt-6 text-sm text-center text-gray-400 space-y-2">
         <Link href="/forget-password" className="hover:text-white block">
@@ -96,7 +113,7 @@ const LoginPage = () => {
           </Link>
         </p>
       </div>
-    </>
+    </div>
   );
 };
 
