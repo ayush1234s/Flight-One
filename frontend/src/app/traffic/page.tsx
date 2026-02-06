@@ -19,17 +19,22 @@ const TrafficPage = () => {
       setLoading(true);
       setError("");
 
-      const res = await fetch("/api/opensky", { cache: "no-store" });
+      const res = await fetch("https://opensky-network.org/api/states/all");
+
+      if(!res.ok){
+        console.log("OpenSky response not ok");
+        throw new Error("OpenSky response not ok");
+      }
       const data = await res.json();
 
       // Handle fallback flags from route.ts
-      if (data.__fallback) {
-        setError("Showing last known data (Live API unstable).");
-      }
-      if (data.__error) {
-        setError("Live flight data temporarily unavailable.");
-        console.log("OpenSky API error:", data.message);
-      }
+      // if (data.__fallback) {
+      //   setError("Showing last known data (Live API unstable).");
+      // }
+      // if (data.__error) {
+      //   setError("Live flight data temporarily unavailable.");
+      //   console.log("OpenSky API error:", data.message);
+      // }
 
       const list = data.states?.slice(0, 80) || [];
       setFlights(list);
