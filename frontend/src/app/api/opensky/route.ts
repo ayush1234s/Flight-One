@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs"; // ✅ important for Vercel
+// ✅ Force Node runtime on Vercel (OpenSky OAuth needs Node, not Edge)
+export const runtime = "nodejs";
 
 export async function GET() {
   try {
@@ -14,7 +15,7 @@ export async function GET() {
       );
     }
 
-    // 1) Get OAuth2 Token
+    // 1️⃣ Get OAuth Token
     const params = new URLSearchParams();
     params.append("grant_type", "client_credentials");
     params.append("client_id", clientId);
@@ -43,7 +44,7 @@ export async function GET() {
 
     const tokenData = JSON.parse(tokenText);
 
-    // 2) Call OpenSky API with Bearer token
+    // 2️⃣ Call OpenSky API
     const res = await fetch("https://opensky-network.org/api/states/all", {
       headers: {
         Authorization: `Bearer ${tokenData.access_token}`,
