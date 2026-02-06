@@ -174,6 +174,7 @@ const TrafficPage = () => {
           {filtered.length === 0 && !loading && (
             <div className="col-span-full text-center py-16">
               <p className="text-gray-400">No flights match your filter.</p>
+              <p className="text-gray-400">429 Too Many Requests Calling Server Fetching Data Failed..</p>
             </div>
           )}
         </div>
