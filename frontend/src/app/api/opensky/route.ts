@@ -1,20 +1,24 @@
-export const runtime = "nodejs";
-
 import { NextResponse } from "next/server";
+
+export const runtime = "nodejs"; // ✅ important for Vercel
 
 export async function GET() {
   try {
-    if (!process.env.OPENSKY_CLIENT_ID || !process.env.OPENSKY_CLIENT_SECRET) {
+    const clientId = process.env.OPENSKY_CLIENT_ID;
+    const clientSecret = process.env.OPENSKY_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
       return NextResponse.json(
         { error: "Missing OpenSky ENV vars" },
         { status: 500 }
       );
     }
 
+    // 1) Get OAuth2 Token
     const params = new URLSearchParams();
     params.append("grant_type", "client_credentials");
-    params.append("client_id", process.env.OPENSKY_CLIENT_ID!);
-    params.append("client_secret", process.env.OPENSKY_CLIENT_SECRET!);
+    params.append("client_id", clientId);
+    params.append("client_secret", clientSecret);
 
     const tokenRes = await fetch(
       "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token",
@@ -22,35 +26,49 @@ export async function GET() {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "User-Agent": "Flight-One-App/1.0",
         },
         body: params.toString(),
         cache: "no-store",
       }
     );
 
-    if (!tokenRes.ok) throw new Error("OAuth token failed");
+    const tokenText = await tokenRes.text();
 
-    const { access_token } = await tokenRes.json();
+    if (!tokenRes.ok) {
+      return NextResponse.json(
+        { error: "Token failed", status: tokenRes.status, body: tokenText },
+        { status: tokenRes.status }
+      );
+    }
 
+    const tokenData = JSON.parse(tokenText);
+
+    // 2) Call OpenSky API with Bearer token
     const res = await fetch("https://opensky-network.org/api/states/all", {
       headers: {
-        Authorization: `Bearer ${access_token}`,
-        "User-Agent": "Flight-One-App/1.0",
+        Authorization: `Bearer ${tokenData.access_token}`,
       },
       cache: "no-store",
     });
 
-    if (!res.ok) throw new Error("OpenSky fetch failed");
+    const dataText = await res.text();
 
-    const data = await res.json();
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: "OpenSky API error", status: res.status, body: dataText },
+        { status: res.status }
+      );
+    }
+
+    const data = JSON.parse(dataText);
     return NextResponse.json(data);
-  } catch (err) {
-    // 🔁 fallback for demo reliability
-    const res = await fetch("https://opensky-network.org/api/states/all", {
-      cache: "no-store",
-    });
-    const data = await res.json();
-    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json(
+      {
+        error: "OpenSky route crashed",
+        message: err?.message || "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
