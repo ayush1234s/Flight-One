@@ -42,7 +42,8 @@ const TrafficPage = () => {
   useEffect(() => {
     fetchFlights();
 
-    const refresh = setInterval(fetchFlights, 60000);
+    const refresh = setInterval(fetchFlights, 120000); // 2 min
+
     const timer = setInterval(() => {
       setSeconds((s) => (s > 0 ? s - 1 : REFRESH_TIME));
     }, 1000);
