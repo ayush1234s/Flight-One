@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { Plane, RefreshCw } from "lucide-react";
 
-const REFRESH_TIME = 15 * 60; // 15 minutes in seconds
+const REFRESH_TIME = 15 * 60; // 15 minutes
+
+type Flight = any[];
 
 const TrafficPage = () => {
-  const [flights, setFlights] = useState<any[]>([]);
-  const [filtered, setFiltered] = useState<any[]>([]);
+  const [flights, setFlights] = useState<Flight[]>([]);
+  const [filtered, setFiltered] = useState<Flight[]>([]);
   const [country, setCountry] = useState("");
   const [search, setSearch] = useState("");
   const [seconds, setSeconds] = useState(REFRESH_TIME);
@@ -17,17 +19,17 @@ const TrafficPage = () => {
   const fetchFlights = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/opensky", { cache: "no-store" });
+      const res = await fetch("/api/aviationstack", { cache: "no-store" });
       const data = await res.json();
 
-      const list = data.states?.slice(0, 80) || [];
+      const list: Flight[] = data.states || [];
+
       setFlights(list);
       setFiltered(list);
-      setCached(data.cached);
-
+      setCached(!!data.cached);
       setSeconds(REFRESH_TIME);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     } finally {
       setLoading(false);
     }
@@ -53,18 +55,29 @@ const TrafficPage = () => {
 
     if (country) {
       data = data.filter((f) =>
-        f[2]?.toLowerCase().includes(country.toLowerCase())
+        (f[2] || "").toLowerCase().includes(country.toLowerCase())
       );
     }
 
     if (search) {
       data = data.filter((f) =>
-        f[1]?.toLowerCase().includes(search.toLowerCase())
+        (f[1] || "").toLowerCase().includes(search.toLowerCase())
       );
     }
 
     setFiltered(data);
   }, [country, search, flights]);
+
+  const getStatus = (f: Flight) => {
+    // If altitude or speed present, consider airborne
+    const altitude = f[7] || 0;
+    const speedMs = f[9] || 0;
+
+    if (altitude > 100 || speedMs > 50 / 3.6) {
+      return <span className="text-green-400">Airborne</span>;
+    }
+    return <span className="text-yellow-400">On Ground</span>;
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-24">
@@ -150,14 +163,12 @@ const TrafficPage = () => {
               </div>
 
               <div className="grid grid-cols-2 text-xs text-gray-300 gap-2">
-                <p><span className="text-gray-400">Country:</span> {f[2] || "—"}</p>
                 <p>
-                  <span className="text-gray-400">Status:</span>{" "}
-                  {f[8] ? (
-                    <span className="text-yellow-400">On Ground</span>
-                  ) : (
-                    <span className="text-green-400">Airborne</span>
-                  )}
+                  <span className="text-gray-400">Country:</span>{" "}
+                  {f[2] || "—"}
+                </p>
+                <p>
+                  <span className="text-gray-400">Status:</span> {getStatus(f)}
                 </p>
                 <p>
                   <span className="text-gray-400">Altitude:</span>{" "}
@@ -174,7 +185,9 @@ const TrafficPage = () => {
           {filtered.length === 0 && !loading && (
             <div className="col-span-full text-center py-16">
               <p className="text-gray-400">No flights match your filter.</p>
-              <p className="text-gray-400">429 Too Many Requests Calling Server Fetching Data Failed..</p>
+              <p className="text-gray-500">
+                Free API has limited live data. Try refreshing after some time.
+              </p>
             </div>
           )}
         </div>
