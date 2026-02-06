@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    // 1) Get OAuth2 Token
     const params = new URLSearchParams();
     params.append("grant_type", "client_credentials");
     params.append("client_id", process.env.OPENSKY_CLIENT_ID!);
@@ -19,34 +18,34 @@ export async function GET() {
     );
 
     if (!tokenRes.ok) {
-      const t = await tokenRes.text();
+      const body = await tokenRes.text();
       return NextResponse.json(
-        { error: "Token failed", status: tokenRes.status, body: t },
+        { error: "OpenSky token failed", status: tokenRes.status, body },
         { status: tokenRes.status }
       );
     }
 
-    const tokenData = await tokenRes.json();
+    const { access_token } = await tokenRes.json();
 
-    // 2) Call OpenSky API with Bearer token
     const res = await fetch("https://opensky-network.org/api/states/all", {
       headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
+        Authorization: `Bearer ${access_token}`,
       },
       cache: "no-store",
     });
 
     if (!res.ok) {
-      const text = await res.text();
+      const body = await res.text();
       return NextResponse.json(
-        { error: "OpenSky error", status: res.status, body: text },
+        { error: "OpenSky fetch failed", status: res.status, body },
         { status: res.status }
       );
     }
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (err: any) {
+    console.error("OpenSky API error:", err);
     return NextResponse.json(
       { error: "Failed to fetch OpenSky data" },
       { status: 500 }

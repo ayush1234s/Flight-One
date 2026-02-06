@@ -19,7 +19,7 @@ const TrafficPage = () => {
       const res = await fetch("/api/opensky", { cache: "no-store" });
       const data = await res.json();
 
-      const list = data.states?.slice(0, 80) || []; // 👈 more data
+      const list = data.states?.slice(0, 80) || [];
       setFlights(list);
       setFiltered(list);
       setSeconds(REFRESH_TIME);
@@ -75,17 +75,17 @@ const TrafficPage = () => {
           </h1>
 
           {/* 🔴 LIVE BLINK */}
-          <div className="flex items-center gap-2 text-red-500 font-semibold text-sm">
-            <span className="relative flex h-3 w-3">
+          <div className="flex items-center gap-2 text-red-500 font-semibold text-xs px-2 py-1 rounded-full bg-red-500/10 border border-red-500/20">
+            <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
             </span>
             LIVE
           </div>
         </div>
 
-        <div className="text-sm text-gray-400">
-          Refresh in <span className="text-sky-400">{seconds}s</span>
+        <div className="text-xs text-gray-400">
+          Auto refresh in <span className="text-sky-400 font-medium">{seconds}s</span>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ const TrafficPage = () => {
 
         <input
           className="input"
-          placeholder="Search by Flight Code"
+          placeholder="Search by Flight Code (e.g. AI202)"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -108,11 +108,11 @@ const TrafficPage = () => {
 
       {/* SHIMMER LOADING */}
       {loading && (
-        <div className="grid md:grid-cols-2 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="h-32 rounded-xl bg-white/5 border border-white/10 animate-pulse"
+              className="h-36 rounded-xl bg-white/5 border border-white/10 animate-pulse"
             />
           ))}
         </div>
@@ -120,29 +120,29 @@ const TrafficPage = () => {
 
       {/* FLIGHTS */}
       {!loading && (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((f, i) => (
             <div
               key={i}
-              className="bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-6 hover:border-sky-400/40 transition"
+              className="group bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-xl p-5 hover:border-sky-400/40 hover:shadow-sky-500/10 hover:shadow-lg transition"
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-semibold text-base truncate">
                   {f[1]?.trim() || "Unknown Flight"}
                 </h3>
 
                 {/* ✈️ PLANE ROTATION */}
                 <Plane
-                  size={22}
-                  className="text-sky-400 transition-transform duration-1000"
+                  size={20}
+                  className="text-sky-400 transition-transform duration-1000 group-hover:scale-110"
                   style={{
                     transform: `rotate(${f[10] || 0}deg)`,
                   }}
                 />
               </div>
 
-              <div className="grid grid-cols-2 text-sm text-gray-300 gap-2">
-                <p><span className="text-gray-400">Country:</span> {f[2]}</p>
+              <div className="grid grid-cols-2 text-xs text-gray-300 gap-2">
+                <p><span className="text-gray-400">Country:</span> {f[2] || "—"}</p>
                 <p>
                   <span className="text-gray-400">Status:</span>{" "}
                   {f[8] ? (
@@ -163,10 +163,15 @@ const TrafficPage = () => {
             </div>
           ))}
 
-          {filtered.length === 0 && (
-            <p className="text-gray-400 col-span-full text-center">
-              No flights match your filter.
-            </p>
+          {filtered.length === 0 && !loading && (
+            <div className="col-span-full text-center py-16">
+              <p className="text-gray-400">
+                No flights match your filter.
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Try clearing filters or searching a different flight code.
+              </p>
+            </div>
           )}
         </div>
       )}
