@@ -1,3 +1,4 @@
+import "dotenv/config";        // ✅ env load
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
@@ -27,12 +28,12 @@ app.get("/api/live-flights", async (req, res) => {
       return res.status(tokenRes.status).json({ error: "Token failed", body: t });
     }
 
-    const tokenData = await tokenRes.json();
+    const { access_token } = await tokenRes.json();
 
     // 2) Call OpenSky with Bearer token
     const response = await fetch("https://opensky-network.org/api/states/all", {
       headers: {
-        Authorization: `Bearer ${tokenData.access_token}`,
+        Authorization: `Bearer ${access_token}`,
       },
     });
 
@@ -44,11 +45,13 @@ app.get("/api/live-flights", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    console.error(err);
+    console.error("OpenSky API error:", err);
     res.status(500).json({ error: "OpenSky API error" });
   }
 });
 
-app.listen(5000, () => {
-  console.log("OpenSky backend running on port 5000");
+// ✅ Render requires this:
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log("OpenSky backend running on port", PORT);
 });
