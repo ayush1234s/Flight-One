@@ -22,9 +22,9 @@ async function safeFetch(url: string, timeout = 6000) {
 export async function GET() {
   try {
     // 🧠 Serve cache if still fresh
-    if (cache && Date.now() - lastFetch < CACHE_TTL) {
-      return NextResponse.json({ ...cache, __cached: true });
-    }
+    // if (cache && Date.now() - lastFetch < CACHE_TTL) {
+    //   return NextResponse.json({ ...cache, __cached: true });
+    // }
 
     const res = await safeFetch("https://opensky-network.org/api/states/all");
 
@@ -33,27 +33,26 @@ export async function GET() {
     }
 
     const data = await res.json();
-    cache = data;
+    // cache = data;
     lastFetch = Date.now();
 
     return NextResponse.json(data);
-  } catch (err: any) {
-    // 🛟 Fallback to cache
-    if (cache) {
+    } catch (err: any) {
+      // 🛟 Fallback to cache
+      // if (cache) {
+      //   return NextResponse.json({
+      //     ...cache,
+      //     __fallback: true,
+      //     message: "Live API unstable. Showing cached data.",
+      //   });
+      // }
+  
+      // 🧯 Absolute fallback – never crash
       return NextResponse.json({
-        ...cache,
-        __fallback: true,
-        message: "Live API unstable. Showing cached data.",
+        time: Date.now(),
+        states: [],
+        __error: true,
+        message: `Live flight data temporarily unavailable (OpenSky unstable). ${err.message || err}`,
       });
     }
-
-    // 🧯 Absolute fallback – never crash
-    return NextResponse.json({
-      time: Date.now(),
-      states: [],
-      __error: true,
-      message:
-        "Live flight data temporarily unavailable (OpenSky unstable).",
-    });
-  }
 }
