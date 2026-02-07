@@ -120,7 +120,16 @@ export default function Navbar() {
             </button>
 
             {alertsOpen && (
-              <div className="absolute right-0 mt-3 w-80 bg-slate-900/95 backdrop-blur border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+             <div
+  className="
+    absolute mt-3 w-[90vw] max-w-[20rem]
+    left-1/2 -translate-x-1/2
+    md:left-auto md:translate-x-0 md:right-0
+    bg-slate-900/95 backdrop-blur border border-white/10
+    rounded-xl shadow-2xl overflow-hidden
+  "
+>
+
                 <div className="px-4 py-2 border-b border-white/10 flex items-center justify-between">
                   <p className="text-sm font-semibold">Flight Alerts</p>
                   <button
@@ -223,22 +232,59 @@ export default function Navbar() {
       </div>
 
       {/* MOBILE MENU */}
-      {open && (
-        <div className="md:hidden bg-slate-900/95 backdrop-blur border-t border-white/10 px-6 py-4 space-y-4">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className={`block text-sm transition ${
-                pathname === link.href ? "text-sky-400" : "text-gray-300 hover:text-white"
-              }`}
-            >
-              {link.name}
-            </Link>
-          ))}
+      {/* MOBILE MENU */}
+{open && (
+  <div className="md:hidden bg-slate-900/95 backdrop-blur border-t border-white/10 px-6 py-4 space-y-4">
+    {navLinks.map((link) => (
+      <Link
+        key={link.name}
+        href={link.href}
+        onClick={() => setOpen(false)}
+        className={`block text-sm transition ${
+          pathname === link.href
+            ? "text-sky-400"
+            : "text-gray-300 hover:text-white"
+        }`}
+      >
+        {link.name}
+      </Link>
+    ))}
+
+    {/* MOBILE AUTH (FIXED) */}
+    <div className="pt-4 border-t border-white/10">
+      {!user ? (
+        <div className="flex gap-3">
+          <Link
+            href="/login"
+            onClick={() => setOpen(false)}
+            className="flex-1 text-center border border-white/20 py-2 rounded-lg hover:bg-white/10 transition"
+          >
+            Login
+          </Link>
+
+          <Link
+            href="/signup"
+            onClick={() => setOpen(false)}
+            className="flex-1 text-center bg-sky-500 text-black py-2 rounded-lg font-semibold hover:bg-sky-400 transition"
+          >
+            Sign Up
+          </Link>
         </div>
+      ) : (
+        <button
+          onClick={() => {
+            logout();
+            setOpen(false);
+          }}
+          className="w-full border border-white/20 py-2 rounded-lg text-red-400 hover:bg-white/5 transition"
+        >
+          Logout
+        </button>
       )}
+    </div>
+  </div>
+)}
+
     </nav>
   );
 }

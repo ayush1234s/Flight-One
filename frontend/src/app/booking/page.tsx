@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAuth } from "@/app/context/AuthContent";
 
 type Offer = {
   id: string;
@@ -48,7 +49,7 @@ const getCarrier = (flight: string) => flight?.slice(0, 2);
 const getLogo = (flight: string) => {
   const c = getCarrier(flight);
   const domain = AIRLINE_META[c]?.domain;
-  return domain ? `https://logo.clearbit.com/${domain}` : "airplane.png";
+  return domain ? `https://logo.clearbit.com/${domain}` : "/airplane.png";
 };
 const getBookingUrl = (flight: string, from: string, to: string, date: string) => {
   const c = getCarrier(flight);
@@ -59,6 +60,8 @@ const getBookingUrl = (flight: string, from: string, to: string, date: string) =
 };
 
 export default function BookingPage() {
+  const { user } = useAuth(); // 🔥 auth check added
+
   const [from, setFrom] = useState("DEL");
   const [to, setTo] = useState("BOM");
   const [date, setDate] = useState("");
@@ -67,7 +70,9 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
 
   const search = async () => {
+    if (!user) return; // 🔒 block if not logged in
     if (!date) return alert("Select date first");
+
     setLoading(true);
     const res = await fetch(
       `/api/search-flights?from=${from}&to=${to}&date=${date}&adults=1&cabin=${cabin}`
@@ -88,17 +93,23 @@ export default function BookingPage() {
     <div className="max-w-7xl mx-auto px-6 py-20">
       <h1 className="text-3xl font-bold mb-4">Search Flights & Compare (INR)</h1>
 
+      {!user && (
+        <div className="mb-4 rounded-lg border border-yellow-400/40 bg-yellow-400/10 px-4 py-2 text-sm text-yellow-300">
+          Please login to search and compare flights.
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="grid md:grid-cols-5 gap-3 mb-6 items-center">
         <select className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
-          value={from} onChange={(e) => setFrom(e.target.value)}>
+          value={from} onChange={(e) => setFrom(e.target.value)} disabled={!user}>
           {AIRPORTS.map((a) => (
             <option key={a.code} value={a.code} className="bg-white text-black">{a.label}</option>
           ))}
         </select>
 
         <select className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
-          value={to} onChange={(e) => setTo(e.target.value)}>
+          value={to} onChange={(e) => setTo(e.target.value)} disabled={!user}>
           {AIRPORTS.map((a) => (
             <option key={a.code} value={a.code} className="bg-white text-black">{a.label}</option>
           ))}
@@ -106,19 +117,26 @@ export default function BookingPage() {
 
         <input type="date"
           className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
-          value={date} onChange={(e) => setDate(e.target.value)} />
+          value={date} onChange={(e) => setDate(e.target.value)} disabled={!user} />
 
         <select className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
-          value={cabin} onChange={(e) => setCabin(e.target.value)}>
+          value={cabin} onChange={(e) => setCabin(e.target.value)} disabled={!user}>
           <option value="ECONOMY" className="bg-white text-black">Economy</option>
           <option value="PREMIUM_ECONOMY" className="bg-white text-black">Premium Economy</option>
           <option value="BUSINESS" className="bg-white text-black">Business</option>
           <option value="FIRST" className="bg-white text-black">First Class</option>
         </select>
 
-        <button onClick={search}
-          className="h-11 px-4 rounded-md border border-white/10 hover:border-sky-400/40 hover:text-sky-400 transition">
-          {loading ? "Searching..." : "Search"}
+        <button
+          onClick={search}
+          disabled={!user || loading}
+          className={`h-11 px-4 rounded-md border transition ${
+            !user
+              ? "border-white/10 text-gray-500 cursor-not-allowed"
+              : "border-white/10 hover:border-sky-400/40 hover:text-sky-400"
+          }`}
+        >
+          {loading ? "Searching..." : user ? "Search" : "Login to Search"}
         </button>
       </div>
 
@@ -194,7 +212,7 @@ export default function BookingPage() {
         ))}
       </div>
 
-      {!loading && offers.length === 0 && (
+      {!loading && offers.length === 0 && user && (
         <p className="text-gray-400 mt-6">No results. Try different route/date/class.</p>
       )}
     </div>
