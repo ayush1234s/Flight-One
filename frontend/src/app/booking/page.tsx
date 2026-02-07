@@ -6,8 +6,8 @@ type Offer = {
   id: string;
   priceInr: number;
   currency: string;
-  airline: string;   // carrier code (AI, 6E, SG...)
-  flight: string;    // e.g., AI805
+  airline: string;   // carrier code
+  flight: string;    // e.g. AI805
   from: string;
   to: string;
   dep: string;
@@ -30,18 +30,32 @@ const AIRPORTS = [
   { code: "JAI", label: "Jaipur, Rajasthan (JAI)" },
 ];
 
-// Airline redirect map
-const AIRLINE_BOOK_URL: Record<string, string> = {
-  AI: "https://www.airindia.com/",
-  "6E": "https://www.goindigo.in/",
-  SG: "https://www.spicejet.com/",
-  UK: "https://www.airvistara.com/",
-  EK: "https://www.emirates.com/",
-  QR: "https://www.qatarairways.com/",
-  EY: "https://www.etihad.com/",
-  LH: "https://www.lufthansa.com/",
-  AF: "https://www.airfrance.com/",
-  BA: "https://www.britishairways.com/",
+// Airline redirect + logo domains
+const AIRLINE_META: Record<string, { url: string; domain: string }> = {
+  AI: { url: "https://www.airindia.com/", domain: "airindia.com" },
+  "6E": { url: "https://www.goindigo.in/", domain: "goindigo.in" },
+  SG: { url: "https://www.spicejet.com/", domain: "spicejet.com" },
+  UK: { url: "https://www.airvistara.com/", domain: "airvistara.com" },
+  EK: { url: "https://www.emirates.com/", domain: "emirates.com" },
+  QR: { url: "https://www.qatarairways.com/", domain: "qatarairways.com" },
+  EY: { url: "https://www.etihad.com/", domain: "etihad.com" },
+  LH: { url: "https://www.lufthansa.com/", domain: "lufthansa.com" },
+  AF: { url: "https://www.airfrance.com/", domain: "airfrance.com" },
+  BA: { url: "https://www.britishairways.com/", domain: "britishairways.com" },
+};
+
+const getCarrier = (flight: string) => flight?.slice(0, 2);
+const getLogo = (flight: string) => {
+  const c = getCarrier(flight);
+  const domain = AIRLINE_META[c]?.domain;
+  return domain ? `https://logo.clearbit.com/${domain}` : "airplane.png";
+};
+const getBookingUrl = (flight: string, from: string, to: string, date: string) => {
+  const c = getCarrier(flight);
+  return (
+    AIRLINE_META[c]?.url ||
+    `https://www.aviasales.com/search/${from}${date.replaceAll("-", "")}${to}1`
+  );
 };
 
 export default function BookingPage() {
@@ -70,14 +84,6 @@ export default function BookingPage() {
   const top = [best, better, avg].filter(Boolean);
   const rest = sorted.filter((o) => !top.find((t) => t?.id === o.id));
 
-  const bookOnAirline = (o: Offer) => {
-    const carrier = o.flight?.slice(0, 2); // AI, 6E, SG...
-    const url =
-      AIRLINE_BOOK_URL[carrier] ||
-      `https://www.aviasales.com/search/${from}${date.replaceAll("-", "")}${to}1`;
-    window.open(url, "_blank");
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-6 py-20">
       <h1 className="text-3xl font-bold mb-4">Search Flights & Compare (INR)</h1>
@@ -87,18 +93,14 @@ export default function BookingPage() {
         <select className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
           value={from} onChange={(e) => setFrom(e.target.value)}>
           {AIRPORTS.map((a) => (
-            <option key={a.code} value={a.code} className="bg-white text-black">
-              {a.label}
-            </option>
+            <option key={a.code} value={a.code} className="bg-white text-black">{a.label}</option>
           ))}
         </select>
 
         <select className="h-11 px-3 rounded-md bg-white text-black border border-gray-300 focus:ring-2 focus:ring-sky-400"
           value={to} onChange={(e) => setTo(e.target.value)}>
           {AIRPORTS.map((a) => (
-            <option key={a.code} value={a.code} className="bg-white text-black">
-              {a.label}
-            </option>
+            <option key={a.code} value={a.code} className="bg-white text-black">{a.label}</option>
           ))}
         </select>
 
@@ -126,17 +128,22 @@ export default function BookingPage() {
           <h2 className="text-xl font-semibold mb-3">Top Picks</h2>
           <div className="grid md:grid-cols-3 gap-4 mb-8">
             {top.map((o, i) => (
-              <div
-                key={`${o.id}-${o.flight}-${o.dep}-${i}`}
+              <div key={`${o.id}-${o.flight}-${o.dep}-${i}`}
                 className={`rounded-xl p-4 border ${
                   i === 0 ? "border-green-400 bg-green-400/10" :
                   i === 1 ? "border-yellow-400 bg-yellow-400/10" :
                             "border-sky-400 bg-sky-400/10"
                 }`}
               >
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <img
+                    src={getLogo(o.flight)}
+                    alt={o.airline}
+                    className="h-6 w-6 rounded-sm bg-white p-0.5"
+                    onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/airplane.png")}
+                  />
                   <h3 className="font-semibold">{o.flight}</h3>
-                  <span className="text-xs">
+                  <span className="ml-auto text-xs">
                     {i === 0 ? "BEST" : i === 1 ? "BETTER" : "AVERAGE"}
                   </span>
                 </div>
@@ -144,9 +151,8 @@ export default function BookingPage() {
                 <p className="text-xs text-gray-300">Cabin: {o.cabin} • Class: {o.fareClass}</p>
                 <p className="mt-2 text-lg font-bold">₹ {o.priceInr.toLocaleString("en-IN")}</p>
 
-                {/* Redirect Button */}
                 <button
-                  onClick={() => bookOnAirline(o)}
+                  onClick={() => window.open(getBookingUrl(o.flight, from, to, date), "_blank")}
                   className="mt-3 w-full px-3 py-2 rounded-md border border-white/10 hover:border-sky-400/40"
                 >
                   Book on Airline Website
@@ -161,11 +167,16 @@ export default function BookingPage() {
       <h2 className="text-xl font-semibold mb-3">All Flights</h2>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {rest.map((o, i) => (
-          <div
-            key={`${o.id}-${o.flight}-${o.dep}-${i}`}
-            className="rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <h3 className="font-semibold">{o.flight}</h3>
+          <div key={`${o.id}-${o.flight}-${o.dep}-${i}`} className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <div className="flex items-center gap-3 mb-1">
+              <img
+                src={getLogo(o.flight)}
+                alt={o.airline}
+                className="h-6 w-6 rounded-sm bg-white p-0.5"
+                onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/airplane.png")}
+              />
+              <h3 className="font-semibold">{o.flight}</h3>
+            </div>
             <p className="text-xs text-gray-400">{from} → {to}</p>
             <p className="text-xs text-gray-400">
               {new Date(o.dep).toLocaleTimeString()} → {new Date(o.arr).toLocaleTimeString()}
@@ -173,9 +184,8 @@ export default function BookingPage() {
             <p className="text-xs text-gray-400">Cabin: {o.cabin} • Class: {o.fareClass}</p>
             <p className="mt-2 font-bold">₹ {o.priceInr.toLocaleString("en-IN")}</p>
 
-            {/* Redirect Button */}
             <button
-              onClick={() => bookOnAirline(o)}
+              onClick={() => window.open(getBookingUrl(o.flight, from, to, date), "_blank")}
               className="mt-3 w-full px-3 py-2 rounded-md border border-white/10 hover:border-sky-400/40"
             >
               Book on Airline Website
