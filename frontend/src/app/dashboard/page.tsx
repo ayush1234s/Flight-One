@@ -92,7 +92,7 @@ const DashboardPage = () => {
                     href="/estimator"
                     className="border border-white/20 px-6 py-3 rounded-xl hover:bg-white/10 transition"
                   >
-                    Estimate Total Trip Cost
+                    Travel Buddy 😉
                   </a>
                 </div>
               </>
@@ -132,6 +132,20 @@ const DashboardPage = () => {
             <li>🗺️ View live routes and traffic maps</li>
           </ul>
         </div>
+        <div className="mt-8 flex justify-center">
+  <a
+    href="/chaos"
+    className="border border-white/20 px-10 py-4 rounded-2xl text-lg font-semibold hover:bg-white/10 transition"
+  >
+    Live Chaos Radar
+  </a>
+  
+</div> <br />
+<p className="text-center text-sm text-gray-400">
+  Chaos Radar shows live airport disruptions like delays and congestion, so you can decide whether to travel or avoid risky routes.
+</p>
+
+
       </div>
 
       {/* WHY FLIGHT ONE */}
