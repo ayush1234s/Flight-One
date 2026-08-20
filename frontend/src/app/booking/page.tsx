@@ -117,7 +117,6 @@ const getBookingButtonText = (flight: string) => {
   return `Book on ${name} Website ↗`;
 };
 
-// Official airline website URL generator without query parameters
 const getBookingUrl = (flight: string) => {
   const c = getCarrier(flight);
   return AIRLINE_META[c]?.url || "https://www.airindia.com/";
@@ -180,43 +179,42 @@ export default function BookingPage() {
     }).filter((item) => item.offer);
   }, [offers, aiAnalysis]);
 
-  // Remaining available flights
   const remainingOffers = useMemo(() => {
     const topIds = new Set(topPickedOffers.map((t) => t.offer?.id));
     return offers.filter((o) => !topIds.has(o.id));
   }, [offers, topPickedOffers]);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 overflow-x-hidden">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white flex flex-wrap items-center gap-2 sm:gap-3">
             <span>Flight Search & Compare</span>
-            <span className="text-xs px-3 py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-medium flex items-center gap-1.5">
+            <span className="text-[11px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-medium flex items-center gap-1.5 shrink-0">
               <span>🤖</span> Functioned by AI Agent
             </span>
           </h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <p className="text-gray-400 text-xs sm:text-sm mt-1">
             Compare flight prices, expected delays, and smart AI recommendations in real-time
           </p>
         </div>
       </div>
 
       {!user && (
-        <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-5 py-3 text-sm text-amber-300 flex items-center gap-3">
-          <span className="text-lg">🔒</span>
+        <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs sm:text-sm text-amber-300 flex items-center gap-2.5">
+          <span className="text-base sm:text-lg shrink-0">🔒</span>
           <span>Please log in to search flights and unlock AI Agent insights.</span>
         </div>
       )}
 
       {/* Search Bar Container */}
-      <div className="bg-white/5 border border-white/10 p-5 rounded-2xl mb-10 shadow-xl backdrop-blur-md">
-        <div className="grid md:grid-cols-5 gap-3 items-center">
+      <div className="bg-white/5 border border-white/10 p-4 sm:p-6 rounded-2xl mb-8 sm:mb-10 shadow-xl backdrop-blur-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1">From</label>
             <select
-              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm cursor-pointer"
+              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-xs sm:text-sm cursor-pointer"
               value={from}
               onChange={(e) => setFrom(e.target.value)}
               disabled={!user}
@@ -230,7 +228,7 @@ export default function BookingPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1">To</label>
             <select
-              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm cursor-pointer"
+              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-xs sm:text-sm cursor-pointer"
               value={to}
               onChange={(e) => setTo(e.target.value)}
               disabled={!user}
@@ -245,7 +243,7 @@ export default function BookingPage() {
             <label className="block text-xs font-semibold text-gray-400 mb-1">Departure Date</label>
             <input
               type="date"
-              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm cursor-pointer"
+              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-xs sm:text-sm cursor-pointer"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               disabled={!user}
@@ -255,7 +253,7 @@ export default function BookingPage() {
           <div>
             <label className="block text-xs font-semibold text-gray-400 mb-1">Cabin Class</label>
             <select
-              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm cursor-pointer"
+              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-xs sm:text-sm cursor-pointer"
               value={cabin}
               onChange={(e) => setCabin(e.target.value)}
               disabled={!user}
@@ -267,11 +265,11 @@ export default function BookingPage() {
             </select>
           </div>
 
-          <div className="flex items-end">
+          <div className="sm:col-span-2 lg:col-span-1">
             <button
               onClick={search}
               disabled={!user || loading}
-              className={`w-full h-11 mt-5 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full h-11 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm ${
                 !user
                   ? "bg-white/10 text-gray-500 cursor-not-allowed border border-white/5"
                   : "bg-sky-500 hover:bg-sky-400 text-black shadow-lg shadow-sky-500/20 active:scale-95"
@@ -280,7 +278,7 @@ export default function BookingPage() {
               {loading ? (
                 <>
                   <span className="animate-spin h-4 w-4 border-2 border-black border-t-transparent rounded-full"></span>
-                  <span>Searching Real Flights...</span>
+                  <span>Searching...</span>
                 </>
               ) : (
                 <>
@@ -295,19 +293,19 @@ export default function BookingPage() {
 
       {/* AI Agent Route Analysis Overview Banner */}
       {aiAnalysis?.summary && (
-        <div className="mb-10 rounded-2xl bg-gradient-to-r from-sky-950/60 via-indigo-950/60 to-purple-950/60 border border-sky-500/30 p-5 shadow-2xl backdrop-blur-md">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-400/30 flex items-center justify-center shrink-0 text-xl font-bold">
+        <div className="mb-8 rounded-2xl bg-gradient-to-r from-sky-950/60 via-indigo-950/60 to-purple-950/60 border border-sky-500/30 p-4 sm:p-5 shadow-2xl backdrop-blur-md">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-400/30 flex items-center justify-center shrink-0 text-lg sm:text-xl font-bold">
               🤖
             </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold text-white flex flex-wrap items-center gap-2">
                 <span>Functioned by AI Agent</span>
-                <span className="text-xs text-sky-400 bg-sky-500/10 px-2.5 py-0.5 rounded-full border border-sky-500/20 font-mono">
+                <span className="text-[10px] sm:text-xs text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20 font-mono">
                   {from} → {to}
                 </span>
               </h3>
-              <p className="text-sm text-gray-300 mt-1.5 leading-relaxed">
+              <p className="text-xs sm:text-sm text-gray-300 mt-1.5 leading-relaxed break-words">
                 {aiAnalysis.summary}
               </p>
             </div>
@@ -317,22 +315,22 @@ export default function BookingPage() {
 
       {/* TOP 3 RECOMMENDED FLIGHTS SECTION */}
       {topPickedOffers.length > 0 && (
-        <div className="mb-14">
-          <div className="flex items-center gap-3 mb-6">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+        <div className="mb-10 sm:mb-14">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
               <span>🏆</span>
-              <span>Top 3 Recommended Flights</span>
+              <span>Top Recommended Flights</span>
             </h2>
-            <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full font-medium">
+            <span className="text-[11px] sm:text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
               Functioned by AI Agent
             </span>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
             {topPickedOffers.map(({ offer, pickInfo }, idx) => (
               <div
                 key={`${offer.id}-${idx}`}
-                className={`relative rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between border shadow-2xl ${
+                className={`relative rounded-2xl p-4 sm:p-6 transition-all duration-300 flex flex-col justify-between border shadow-2xl overflow-hidden ${
                   idx === 0
                     ? "bg-gradient-to-b from-emerald-950/40 to-emerald-900/10 border-emerald-500/50 shadow-emerald-500/10"
                     : idx === 1
@@ -340,85 +338,87 @@ export default function BookingPage() {
                     : "bg-gradient-to-b from-purple-950/40 to-purple-900/10 border-purple-500/50 shadow-purple-500/10"
                 }`}
               >
-                {/* Header */}
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <span className={`text-xs px-3 py-1 rounded-full font-semibold border ${
+                  {/* Top Tag & Rank */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className={`text-[10px] sm:text-xs px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full font-semibold border truncate max-w-[80%] ${
                       idx === 0 ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" :
                       idx === 1 ? "bg-sky-500/20 text-sky-300 border-sky-500/40" :
                                   "bg-purple-500/20 text-purple-300 border-purple-500/40"
                     }`}>
                       {pickInfo.grokTag}
                     </span>
-                    <span className="text-xs text-gray-400 font-mono">Top #{idx + 1}</span>
+                    <span className="text-xs text-gray-400 font-mono shrink-0">#{idx + 1}</span>
                   </div>
 
-                  {/* Airline Info */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src={getLogo(offer.flight)}
-                      alt={getAirlineName(offer.flight)}
-                      className="h-8 w-8 rounded-lg bg-white p-1 object-contain shadow"
-                      onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/airplane.png")}
-                    />
-                    <div>
-                      <h3 className="font-bold text-lg text-white">{offer.flight}</h3>
-                      <p className="text-xs text-gray-400">{getAirlineName(offer.flight)}</p>
+                  {/* Airline & Price */}
+                  <div className="flex items-center justify-between gap-2 mb-4">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={getLogo(offer.flight)}
+                        alt={getAirlineName(offer.flight)}
+                        className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-white p-1 object-contain shadow shrink-0"
+                        onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/airplane.png")}
+                      />
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-base sm:text-lg text-white truncate">{offer.flight}</h3>
+                        <p className="text-[11px] sm:text-xs text-gray-400 truncate">{getAirlineName(offer.flight)}</p>
+                      </div>
                     </div>
-                    <div className="ml-auto text-right">
-                      <div className="text-2xl font-extrabold text-white">
+                    <div className="text-right shrink-0">
+                      <div className="text-xl sm:text-2xl font-extrabold text-white">
                         ₹ {offer.priceInr.toLocaleString("en-IN")}
                       </div>
-                      <span className="text-xs text-gray-400">{offer.cabin}</span>
+                      <span className="text-[11px] text-gray-400">{offer.cabin}</span>
                     </div>
                   </div>
 
-                  {/* Route & Times */}
-                  <div className="bg-white/5 border border-white/5 rounded-xl p-3 mb-4 flex items-center justify-between text-center">
-                    <div>
-                      <p className="text-sm font-bold text-white">
+                  {/* Route & Timing */}
+                  <div className="bg-white/5 border border-white/5 rounded-xl p-3 mb-4 flex items-center justify-between text-center gap-1">
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">
                         {offer.dep ? new Date(offer.dep).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--:--"}
                       </p>
-                      <p className="text-xs text-gray-400">{from}</p>
+                      <p className="text-[11px] text-gray-400 font-mono">{from}</p>
                     </div>
-                    <div className="flex-1 px-3">
-                      <p className="text-xs text-sky-400 font-medium mb-1">Direct</p>
+                    <div className="flex-1 px-2 min-w-0">
+                      <p className="text-[10px] text-sky-400 font-medium mb-0.5">Direct</p>
                       <div className="h-0.5 bg-gradient-to-r from-sky-500 to-indigo-500 relative">
-                        <div className="w-2 h-2 rounded-full bg-sky-400 absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-sky-400 absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2"></div>
                       </div>
-                      <p className="text-[10px] text-gray-500 mt-1">{offer.duration}</p>
+                      <p className="text-[9px] text-gray-400 mt-0.5">{offer.duration}</p>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-white">
+                    <div className="min-w-0">
+                      <p className="text-xs sm:text-sm font-bold text-white">
                         {offer.arr ? new Date(offer.arr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--:--"}
                       </p>
-                      <p className="text-xs text-gray-400">{to}</p>
+                      <p className="text-[11px] text-gray-400 font-mono">{to}</p>
                     </div>
                   </div>
 
                   {/* AI Agent Insights Grid */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-xs bg-white/5 p-2 rounded-lg border border-white/5 text-gray-300">
-                      <span className="text-emerald-400 font-bold">💰 Price Comparison:</span>
-                      <span className="truncate">{pickInfo.priceAnalysis}</span>
+                  <div className="space-y-2 mb-4 text-xs">
+                    <div className="bg-white/5 p-2 rounded-lg border border-white/5 text-gray-300">
+                      <span className="text-emerald-400 font-bold block mb-0.5">💰 Price Comparison</span>
+                      <span className="text-gray-300 break-words">{pickInfo.priceAnalysis}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs bg-white/5 p-2 rounded-lg border border-white/5 text-gray-300">
-                      <span className="text-amber-400 font-bold">⏱️ Delay & Punctuality:</span>
-                      <span className="truncate">{pickInfo.delayAnalysis}</span>
+                    <div className="bg-white/5 p-2 rounded-lg border border-white/5 text-gray-300">
+                      <span className="text-amber-400 font-bold block mb-0.5">⏱️ Delay & Punctuality</span>
+                      <span className="text-gray-300 break-words">{pickInfo.delayAnalysis}</span>
                     </div>
                   </div>
 
                   {/* AI Agent Verdict */}
-                  <p className="text-xs text-gray-300 italic bg-white/5 p-3 rounded-xl border border-white/5 mb-4 leading-relaxed">
+                  <p className="text-xs text-gray-300 italic bg-white/5 p-3 rounded-xl border border-white/5 mb-4 leading-relaxed break-words">
                     "{pickInfo.aiSummary}"
                   </p>
                 </div>
 
-                {/* Booking Action - Explicit Airline Name and Click Cursor */}
+                {/* Booking Button */}
                 <button
                   onClick={() => window.open(getBookingUrl(offer.flight), "_blank")}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 ${
+                  className={`w-full py-2.5 sm:py-3 rounded-xl font-semibold transition-all duration-200 text-xs sm:text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-center truncate ${
                     idx === 0
                       ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20"
                       : idx === 1
@@ -426,7 +426,7 @@ export default function BookingPage() {
                       : "bg-purple-500 hover:bg-purple-400 text-white shadow-purple-500/20"
                   }`}
                 >
-                  <span>{getBookingButtonText(offer.flight)}</span>
+                  <span className="truncate">{getBookingButtonText(offer.flight)}</span>
                 </button>
               </div>
             ))}
@@ -437,72 +437,72 @@ export default function BookingPage() {
       {/* ALL AVAILABLE FLIGHTS SECTION */}
       {hasSearched && (
         <div>
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <div className="flex items-center justify-between gap-4 mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
               <span>✈️</span>
               <span>Available Flights</span>
             </h2>
-            <span className="text-xs text-gray-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full">
+            <span className="text-xs text-gray-400 bg-white/5 border border-white/10 px-3 py-1 rounded-full shrink-0">
               {offers.length} total options
             </span>
           </div>
 
           {remainingOffers.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
               {remainingOffers.map((o, idx) => (
                 <div
                   key={`${o.id}-${idx}`}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5 hover:border-sky-400/40 transition-all duration-200 backdrop-blur-md flex flex-col justify-between"
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 hover:border-sky-400/40 transition-all duration-200 backdrop-blur-md flex flex-col justify-between overflow-hidden"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         <img
                           src={getLogo(o.flight)}
                           alt={getAirlineName(o.flight)}
-                          className="h-7 w-7 rounded-md bg-white p-1 object-contain"
+                          className="h-7 w-7 rounded-md bg-white p-1 object-contain shrink-0"
                           onError={(e) => ((e.currentTarget as HTMLImageElement).src = "/airplane.png")}
                         />
-                        <div>
-                          <h3 className="font-bold text-white">{o.flight}</h3>
-                          <p className="text-xs text-gray-400">{getAirlineName(o.flight)}</p>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-white text-sm sm:text-base truncate">{o.flight}</h3>
+                          <p className="text-[11px] text-gray-400 truncate">{getAirlineName(o.flight)}</p>
                         </div>
                       </div>
-                      <span className="text-xs px-2.5 py-1 rounded-full bg-white/10 text-gray-300 border border-white/10 font-mono">
+                      <span className="text-[10px] sm:text-xs px-2.5 py-0.5 rounded-full bg-white/10 text-gray-300 border border-white/10 font-mono shrink-0">
                         {o.cabin}
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between my-3 text-xs text-gray-300 bg-white/5 p-3 rounded-xl border border-white/5">
                       <div>
-                        <p className="font-bold text-white text-sm">
+                        <p className="font-bold text-white text-xs sm:text-sm">
                           {o.dep ? new Date(o.dep).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--:--"}
                         </p>
-                        <p className="text-gray-400">{from}</p>
+                        <p className="text-gray-400 text-[11px]">{from}</p>
                       </div>
                       <div className="text-center">
-                        <span className="text-sky-400 font-medium">Direct</span>
-                        <p className="text-[10px] text-gray-500">{o.duration}</p>
+                        <span className="text-sky-400 font-medium text-[11px]">Direct</span>
+                        <p className="text-[9px] text-gray-500">{o.duration}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-white text-sm">
+                        <p className="font-bold text-white text-xs sm:text-sm">
                           {o.arr ? new Date(o.arr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "--:--"}
                         </p>
-                        <p className="text-gray-400">{to}</p>
+                        <p className="text-gray-400 text-[11px]">{to}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between my-2">
-                      <span className="text-xs text-gray-400">Class: <strong className="text-white">{o.fareClass}</strong></span>
-                      <span className="text-xl font-extrabold text-white">₹ {o.priceInr.toLocaleString("en-IN")}</span>
+                      <span className="text-[11px] text-gray-400">Class: <strong className="text-white">{o.fareClass}</strong></span>
+                      <span className="text-lg sm:text-xl font-extrabold text-white">₹ {o.priceInr.toLocaleString("en-IN")}</span>
                     </div>
                   </div>
 
                   <button
                     onClick={() => window.open(getBookingUrl(o.flight), "_blank")}
-                    className="mt-4 w-full py-2.5 rounded-xl border border-white/10 hover:border-sky-400/40 bg-white/5 hover:bg-sky-500 hover:text-black font-semibold text-xs transition-all duration-200 text-center cursor-pointer active:scale-95"
+                    className="mt-3 w-full py-2.5 rounded-xl border border-white/10 hover:border-sky-400/40 bg-white/5 hover:bg-sky-500 hover:text-black font-semibold text-xs transition-all duration-200 text-center cursor-pointer active:scale-95 truncate"
                   >
-                    {getBookingButtonText(o.flight)}
+                    <span className="truncate">{getBookingButtonText(o.flight)}</span>
                   </button>
                 </div>
               ))}
@@ -519,7 +519,7 @@ export default function BookingPage() {
 
       {!loading && hasSearched && offers.length === 0 && user && (
         <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
-          <p className="text-gray-400">No flight offers found for this route and date. Try selecting a different date or route.</p>
+          <p className="text-gray-400 text-xs sm:text-sm">No flight offers found for this route and date. Try selecting a different date or route.</p>
         </div>
       )}
     </div>

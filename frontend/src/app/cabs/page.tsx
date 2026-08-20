@@ -42,7 +42,7 @@ const CITY_AIRPORTS = [
 ];
 
 export default function CabComparePage() {
-  const [pickup, setPickup] = useState("Fetching current location...");
+  const [pickup, setPickup] = useState("Fetching full current location...");
   const [drop, setDrop] = useState("");
   const [vehicleType, setVehicleType] = useState<"ALL" | "Bike" | "Auto" | "Car">("ALL");
   const [distanceKm, setDistanceKm] = useState<number | null>(null);
@@ -51,7 +51,7 @@ export default function CabComparePage() {
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Auto location detection
+  // Auto full location detection
   useEffect(() => {
     if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -64,12 +64,21 @@ export default function CabComparePage() {
               `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
             );
             const data = await res.json();
-            const addr =
-              data?.address?.suburb ||
-              data?.address?.city_district ||
-              data?.address?.city ||
-              "Current Location";
-            setPickup(addr);
+            
+            // Construct full detailed location address
+            let fullAddress = "Current Location";
+            if (data?.display_name) {
+              const parts = data.display_name.split(",").map((p: string) => p.trim());
+              // Format top 3-4 location parts (Area, District, City, State)
+              fullAddress = parts.slice(0, 4).join(", ");
+            } else if (data?.address) {
+              const sub = data.address.suburb || data.address.neighbourhood || data.address.residential || "";
+              const city = data.address.city || data.address.town || data.address.state_district || "";
+              const state = data.address.state || "";
+              fullAddress = [sub, city, state].filter(Boolean).join(", ");
+            }
+
+            setPickup(fullAddress || "Current Location");
           } catch {
             setPickup("Current Location");
           }
@@ -120,9 +129,9 @@ export default function CabComparePage() {
       <div className="bg-white/5 border border-white/10 p-5 rounded-xl mb-8">
         <div className="grid md:grid-cols-4 gap-3 items-end mb-4">
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1">Pickup Point</label>
+            <label className="block text-xs font-medium text-gray-400 mb-1">Full Pickup Location</label>
             <input
-              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm"
+              className="w-full h-11 px-3 rounded-lg bg-gray-900 text-white border border-white/10 focus:border-sky-400 focus:outline-none text-sm font-medium"
               value={pickup}
               onChange={(e) => setPickup(e.target.value)}
               placeholder="Enter pickup point"
