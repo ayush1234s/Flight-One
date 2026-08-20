@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
      "start": "node opensky/server.js",
-    "dev": "nodemon opensky/server.js"
+    "dev": "node opensky/server.js"
     
   },
   "keywords": [],

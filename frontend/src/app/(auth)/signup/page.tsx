@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 
 const SignupPage = () => {
   const router = useRouter();
-  const [name, setName] = useState(""); // 👈 Name
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [consent, setConsent] = useState(false);
@@ -21,12 +21,6 @@ const SignupPage = () => {
 
   const handleSignup = async (e: any) => {
     e.preventDefault();
-
-    if (!consent) {
-      alert("Please allow consent to continue");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -36,15 +30,36 @@ const SignupPage = () => {
         password
       );
 
-      // 👇 Save name to Firebase profile
       await updateProfile(userCred.user, {
         displayName: name,
       });
 
-      await sendEmailVerification(userCred.user);
+      // Store consent preference
+      if (typeof window !== "undefined") {
+        localStorage.setItem("email_ticket_consent", consent ? "true" : "false");
+      }
+
+      const actionCodeSettings = {
+        url: typeof window !== "undefined" ? `${window.location.origin}/verify-email` : "http://localhost:3000/verify-email",
+        handleCodeInApp: true,
+      };
+      await sendEmailVerification(userCred.user, actionCodeSettings);
       router.push("/verify-email");
-    } catch {
-      alert("Signup failed");
+    } catch (err: any) {
+      console.error("Signup error details:", err);
+      let message = "Signup failed. Please try again.";
+      if (err?.code === "auth/operation-not-allowed") {
+        message = "Email/Password sign-in is NOT enabled in your Firebase Console. Please enable Email/Password provider in Firebase Authentication settings.";
+      } else if (err?.code === "auth/email-already-in-use") {
+        message = "This email address is already in use by another account.";
+      } else if (err?.code === "auth/invalid-email") {
+        message = "Invalid email address format.";
+      } else if (err?.code === "auth/weak-password") {
+        message = "Password must be at least 6 characters long.";
+      } else if (err?.message) {
+        message = err.message;
+      }
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -54,8 +69,9 @@ const SignupPage = () => {
     try {
       await signInWithPopup(auth, googleProvider);
       router.push("/dashboard");
-    } catch {
-      alert("Google signup failed");
+    } catch (err: any) {
+      console.error("Google signup error:", err);
+      alert(err?.message || "Google signup failed");
     }
   };
 
@@ -93,17 +109,19 @@ const SignupPage = () => {
           className="w-full rounded-lg bg-white/5 border border-white/10 px-4 py-3 outline-none focus:border-sky-400"
         />
 
-        <label className="flex gap-2 text-sm text-gray-400">
+        <label className="flex gap-2 text-sm text-gray-400 cursor-pointer">
           <input
             type="checkbox"
+            checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
+            className="cursor-pointer mt-0.5"
           />
-          I allow Flight One to fetch flight data using this email.
+          <span>Allow Flight One to check flight booking emails for my account (Optional).</span>
         </label>
 
         <button
           disabled={loading}
-          className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+          className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
         >
           {loading ? (
             <span className="animate-spin h-5 w-5 border-2 border-black border-t-transparent rounded-full"></span>
@@ -120,17 +138,18 @@ const SignupPage = () => {
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      {/* Google small icon button */}
+      {/* Google Signup Button */}
       <div className="flex justify-center">
         <button
           onClick={handleGoogleSignup}
-          className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition"
+          className="w-full py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center gap-3 transition cursor-pointer font-medium text-sm text-white"
         >
           <img
             src="https://www.svgrepo.com/show/475656/google-color.svg"
-            className="w-5"
+            className="w-5 h-5"
             alt="google"
           />
+          <span>Sign up with Google</span>
         </button>
       </div>
 

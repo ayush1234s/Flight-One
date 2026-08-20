@@ -28,8 +28,17 @@ const LoginPage = () => {
       }
 
       router.push("/dashboard");
-    } catch {
-      alert("Invalid email or password");
+    } catch (err: any) {
+      console.error("Login error details:", err);
+      let message = "Invalid email or password.";
+      if (err?.code === "auth/user-not-found" || err?.code === "auth/wrong-password" || err?.code === "auth/invalid-credential") {
+        message = "Invalid email or password.";
+      } else if (err?.code === "auth/too-many-requests") {
+        message = "Access to this account has been temporarily disabled due to many failed login attempts. Reset your password or try again later.";
+      } else if (err?.message) {
+        message = err.message;
+      }
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -39,8 +48,9 @@ const LoginPage = () => {
     try {
       await signInWithPopup(auth, googleProvider);
       router.push("/dashboard");
-    } catch {
-      alert("Google login failed");
+    } catch (err: any) {
+      console.error("Google login error:", err);
+      alert(err?.message || "Google login failed");
     }
   };
 
@@ -70,7 +80,7 @@ const LoginPage = () => {
 
         <button
           disabled={loading}
-          className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center"
+          className="w-full bg-sky-500 py-3 rounded-lg text-black font-semibold hover:bg-sky-400 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
         >
           {loading ? (
             <span className="animate-spin h-5 w-5 border-2 border-black border-t-transparent rounded-full"></span>
@@ -87,17 +97,18 @@ const LoginPage = () => {
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      {/* Google small icon button */}
+      {/* Standard Normal Google Login */}
       <div className="flex justify-center">
         <button
           onClick={handleGoogleLogin}
-          className="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center hover:bg-white/10 transition"
+          className="w-full py-3 px-4 rounded-xl border border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center gap-3 transition cursor-pointer font-medium text-sm text-white"
         >
           <img
             src="https://www.svgrepo.com/show/475656/google-color.svg"
-            className="w-5"
+            className="w-5 h-5"
             alt="google"
           />
+          <span>Log in with Google</span>
         </button>
       </div>
 

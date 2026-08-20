@@ -3,8 +3,9 @@
 import { useAuth } from "@/app/context/AuthContent";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Plane, Search, Ticket, MapPinned, Car, Radar } from "lucide-react";
+import { Plane, Search, Ticket, MapPinned, Car, Radar, CloudSun, MapPin } from "lucide-react";
 import AirplaneBg from "@/app/components/hero/AirplaneBg";
+import Link from "next/link";
 
 const Shimmer = () => (
   <div className="animate-pulse">
@@ -30,7 +31,7 @@ const DashboardPage = () => {
   }, [user, loading, router]);
 
   useEffect(() => {
-    const t = setTimeout(() => setHeroLoading(false), 800);
+    const t = setTimeout(() => setHeroLoading(false), 500);
     return () => clearTimeout(t);
   }, []);
 
@@ -42,7 +43,7 @@ const DashboardPage = () => {
   return (
     <section className="bg-slate-950 text-white overflow-hidden">
 
-      {/* 🔥 HERO SECTION */}
+      {/* HERO SECTION */}
       <div className="relative">
         <AirplaneBg />
 
@@ -116,36 +117,146 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* WHAT YOU CAN DO */}
-      <div className="max-w-7xl mx-auto px-6 py-28">
-        <h2 className="text-4xl font-bold text-center mb-12">
-          What You Can Do
-        </h2>
+      {/* WHAT YOU CAN DO SECTION */}
+      <div className="border-t border-white/10 bg-slate-900/60 py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <h2 className="text-3xl font-bold text-white mb-3">
+              What You Can Do On Flight One
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Explore all tools available on your Flight One dashboard.
+            </p>
+          </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-10">
-          <ul className="grid md:grid-cols-2 gap-6 text-gray-300 text-sm">
-            <li>✈️ Search and compare available flights</li>
-            <li>📩 Retrieve booked tickets using email or PNR</li>
-            <li>🕒 View past, ongoing and upcoming flights</li>
-            <li>🛰️ Track live flight traffic and delays</li>
-            <li>🚕 Compare airport cab fares and ETA</li>
-            <li>🗺️ View live routes and traffic maps</li>
-          </ul>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Card 1: Search Flights */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-sky-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 flex items-center justify-center mb-4">
+                  <Search className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  1. Search & Compare Flights
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Search flights across Indian cities and international routes. Compare prices and book directly on official airline sites (Air India, IndiGo, SpiceJet, Vistara).
+                </p>
+              </div>
+              <Link
+                href="/booking"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                Search Flights ↗
+              </Link>
+            </div>
+
+            {/* Card 2: View Tickets */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-emerald-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-4">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  2. View Your Tickets
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Check your past, present, and upcoming flight bookings registered under your account in your dashboard.
+                </p>
+              </div>
+              <Link
+                href="/tickets"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                My Tickets ↗
+              </Link>
+            </div>
+
+            {/* Card 3: Cab Comparison */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-yellow-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 flex items-center justify-center mb-4">
+                  <Car className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  3. Compare Airport Cabs
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Compare ride fares for Bikes 🏍️, Autos 🛺, and Cabs 🚗 across Uber, Ola, and Rapido to find the cheapest ride to the airport.
+                </p>
+              </div>
+              <Link
+                href="/cabs"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                Compare Cab Fares ↗
+              </Link>
+            </div>
+
+            {/* Card 4: Live Traffic Radar */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-purple-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center mb-4">
+                  <Radar className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  4. Live Air Traffic Radar
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Track active planes flying in real-time across domestic Indian and international airspace with origin/destination country details.
+                </p>
+              </div>
+              <Link
+                href="/traffic"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                Live Traffic Radar ↗
+              </Link>
+            </div>
+
+            {/* Card 5: Weather Status */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-teal-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center mb-4">
+                  <CloudSun className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  5. Flight Weather Status
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  Check current temperature, wind speed, fog, and flight weather advisories for major airports before traveling.
+                </p>
+              </div>
+              <Link
+                href="/chaos"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                Check Airport Weather ↗
+              </Link>
+            </div>
+
+            {/* Card 6: Interactive Map */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md flex flex-col justify-between hover:border-indigo-400/40 transition">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mb-4">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold text-white text-base mb-2">
+                  6. Interactive Flight Map
+                </h3>
+                <p className="text-xs text-gray-300 leading-relaxed mb-6">
+                  View airplanes on an interactive full-screen radar map with flight numbers, speed, altitude, and aircraft models.
+                </p>
+              </div>
+              <Link
+                href="/map"
+                className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold text-center transition cursor-pointer border border-white/10 block"
+              >
+                Open Flight Map ↗
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="mt-8 flex justify-center">
-  <a
-    href="/chaos"
-    className="border border-white/20 px-10 py-4 rounded-2xl text-lg font-semibold hover:bg-white/10 transition"
-  >
-    Live Chaos Radar
-  </a>
-  
-</div> <br />
-<p className="text-center text-sm text-gray-400">
-  Chaos Radar shows live airport disruptions like delays and congestion, so you can decide whether to travel or avoid risky routes.
-</p>
-
-
       </div>
 
       {/* WHY FLIGHT ONE */}
@@ -161,60 +272,6 @@ const DashboardPage = () => {
             Flight One eliminates this complexity by unifying all essential
             travel services into one intelligent platform.
           </p>
-        </div>
-      </div>
-
-      {/* HOW IT WORKS */}
-      <div className="bg-slate-950">
-        <div className="max-w-7xl mx-auto px-6 py-24">
-          <h2 className="text-3xl font-bold text-center mb-16">
-            How Flight One Works
-          </h2>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              "User signs up and provides consent",
-              "Search flights or fetch tickets",
-              "System processes real-time travel data",
-              "User redirected to official providers",
-            ].map((text, i) => (
-              <div
-                key={i}
-                className="border border-white/10 bg-white/5 rounded-xl p-6"
-              >
-                <h3 className="font-semibold text-lg mb-2">
-                  Step {i + 1}
-                </h3>
-                <p className="text-gray-400 text-sm">{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* FEATURES */}
-      <div className="border-t border-white/10 bg-black/40">
-        <div className="max-w-7xl mx-auto px-6 py-24 grid md:grid-cols-3 gap-8">
-          {[
-            "Flight Booking & Comparison",
-            "Email and PNR Ticket Retrieval",
-            "Live Flight Traffic Monitoring",
-            "Airport Cab Fare Comparison",
-            "Live Route and Traffic Visualization",
-            "Privacy-First Consent-Based Design",
-          ].map((feature) => (
-            <div
-              key={feature}
-              className="border border-white/10 bg-white/5 rounded-xl p-6"
-            >
-              <h3 className="font-semibold text-lg mb-2">
-                {feature}
-              </h3>
-              <p className="text-gray-400 text-sm">
-                Designed following real-world aviation workflows.
-              </p>
-            </div>
-          ))}
         </div>
       </div>
 

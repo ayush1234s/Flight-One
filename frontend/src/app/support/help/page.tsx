@@ -1,123 +1,101 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import Link from "next/link";
 
-/* ================= SHIMMER ITEM ================= */
-const ShimmerItem = () => {
-  return (
-    <div className="border border-white/10 bg-white/5 rounded-xl p-6 animate-pulse">
-      <div className="h-4 w-3/4 bg-white/10 rounded mb-3" />
-      <div className="h-3 w-full bg-white/10 rounded" />
-    </div>
-  );
-};
-
-const faqs = [
-  {
-    q: "What is Flight One?",
-    a: "Flight One is a smart travel assistant that helps users search flights, fetch tickets, track live flights, compare airport cabs, and view routes — all in one platform.",
-  },
+const FAQS = [
   {
     q: "How do I search and compare flights?",
-    a: "Go to the Booking page, enter source, destination, date, passengers and class. The system shows available flights and allows comparison based on price and duration.",
+    a: "Go to the Booking page, select your departure city and arrival airport, choose your travel date, and click Search. You can view all available flights sorted by price and duration.",
   },
   {
-    q: "Why am I redirected to airline websites for booking?",
-    a: "Flight One does not handle payments. Users are redirected to official airline or partner websites to complete bookings safely.",
+    q: "How does flight booking work?",
+    a: "Flight One compares flight options across major airlines. When you click 'Book on Airline Website', you are taken directly to the official airline site (like Air India, IndiGo, SpiceJet, or Vistara) to complete your booking safely.",
   },
   {
-    q: "How does ticket fetching work?",
-    a: "If you login using Google, Flight One can check your Gmail (with consent) for flight confirmation emails and display ticket information.",
-  },
-  {
-    q: "Why Google login is required for tickets?",
-    a: "Email-based login does not provide Gmail access. Google login is required to securely detect flight booking emails.",
-  },
-  {
-    q: "Is my Gmail data stored?",
-    a: "No. Flight One does not store or save your emails. Ticket detection is temporary and consent-based.",
+    q: "How do I view my flight tickets?",
+    a: "Go to the Tickets page. If you sign in with Google, Flight One can check your booking confirmation emails and display your ticket details automatically.",
   },
   {
     q: "How does live flight tracking work?",
-    a: "Live flight tracking uses public aviation data to estimate aircraft position, speed, altitude, and status.",
+    a: "On the Traffic and Map pages, you can view live aircraft positions, altitude, speed, and origin/destination countries for active flights.",
   },
   {
-    q: "What is shown in cab comparison?",
-    a: "Cab comparison shows estimated fare, ETA, and vehicle options. Actual booking happens on partner apps.",
+    q: "How do I compare cab fares?",
+    a: "Go to the Cabs page, enter your pickup and drop locations (or select an airport), and choose your vehicle type (Bike, Auto, or Car). You will see estimated fares for Uber, Ola, and Rapido so you can choose the best price.",
+  },
+  {
+    q: "How does airport weather status work?",
+    a: "On the Chaos page, you can view current weather conditions (temperature, wind speed, fog/rain) and travel safety advisories for major airports before leaving for your flight.",
+  },
+  {
+    q: "How do I contact customer support?",
+    a: "You can visit the Contact Support page to send us a message or request assistance with your account.",
   },
 ];
 
 export default function HelpPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // simulate loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const toggle = (i: number) => {
     setOpenIndex(openIndex === i ? null : i);
   };
 
-  /* ================= LOADING STATE ================= */
-  if (loading) {
-    return (
-      <div className="max-w-4xl mx-auto px-6 py-24">
-        <h1 className="text-3xl font-bold mb-10 text-center text-gray-300">
+  return (
+    <div className="max-w-4xl mx-auto px-6 py-16">
+      {/* Title */}
+      <div className="mb-10 text-center">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
           Help Center
         </h1>
-
-        <div className="space-y-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <ShimmerItem key={i} />
-          ))}
-        </div>
+        <p className="text-gray-400 text-sm">
+          Find answers to common questions about using Flight One.
+        </p>
       </div>
-    );
-  }
 
-  /* ================= MAIN CONTENT ================= */
-  return (
-    <div className="max-w-4xl mx-auto px-6 py-24">
-      <h1 className="text-3xl font-bold mb-10 text-center">
-        Help Center
-      </h1>
-
-      <div className="space-y-4">
-        {faqs.map((item, i) => (
+      {/* FAQs List */}
+      <div className="space-y-3 mb-12">
+        {FAQS.map((item, i) => (
           <div
             key={i}
-            className="border border-white/10 bg-white/5 rounded-xl"
+            className="border border-white/10 bg-white/5 rounded-xl overflow-hidden"
           >
-            {/* QUESTION */}
             <button
               onClick={() => toggle(i)}
-              className="w-full flex justify-between items-center px-6 py-4 text-left"
+              className="w-full flex justify-between items-center px-6 py-4 text-left cursor-pointer hover:bg-white/5 transition"
             >
-              <span className="font-medium">
+              <span className="font-medium text-white text-sm sm:text-base">
                 {item.q}
               </span>
               <ChevronDown
-                className={`transition-transform ${
-                  openIndex === i ? "rotate-180" : ""
+                className={`w-5 h-5 text-gray-400 transition-transform ${
+                  openIndex === i ? "rotate-180 text-sky-400" : ""
                 }`}
               />
             </button>
 
-            {/* ANSWER */}
             {openIndex === i && (
-              <div className="px-6 pb-5 text-gray-400 text-sm leading-relaxed">
+              <div className="px-6 pb-5 text-gray-300 text-sm leading-relaxed border-t border-white/5 pt-4">
                 {item.a}
               </div>
             )}
           </div>
         ))}
+      </div>
+
+      {/* Need More Help Footer */}
+      <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+        <h3 className="font-semibold text-white mb-1">Still need help?</h3>
+        <p className="text-gray-400 text-xs mb-4">
+          Contact our support team for assistance.
+        </p>
+        <Link
+          href="/support/contact"
+          className="inline-block px-5 py-2.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-black font-semibold text-xs transition cursor-pointer"
+        >
+          Contact Support
+        </Link>
       </div>
     </div>
   );
