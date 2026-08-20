@@ -3,42 +3,26 @@
 import { useEffect, useState } from "react";
 import FlightMap from "../components/map/FlightMap";
 
-type Flight = {
-  flightNumber: string;
-  airline: { name: string; iata: string; icao: string };
-  position: { lat: number | null; lng: number | null };
-  altitudeM: number | null;
-  speedKmh: number | null;
-  direction: number | null;
-  status: string;
-  isInternational?: boolean;
-  departure: {
-    iata: string;
-    city: string;
-    country: string;
-    flag: string;
-  };
-  arrival: {
-    iata: string;
-    city: string;
-    country: string;
-    flag: string;
-  };
-  aircraft: { type: string; registration: string };
+type LivePlane = {
+  id: string;
+  callsign: string;
+  country: string;
+  lat: number;
+  lng: number;
+  altitudeM: number;
+  speedKmh: number;
+  heading: number;
 };
 
 const MapPage = () => {
-  const [flights, setFlights] = useState<Flight[]>([]);
+  const [planes, setPlanes] = useState<LivePlane[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchFlights = async () => {
+  const fetchLivePlanes = async () => {
     try {
-      setLoading(true);
-      const res = await fetch("/api/airlabs", {
-        cache: "no-store",
-      });
+      const res = await fetch("/api/opensky", { cache: "no-store" });
       const data = await res.json();
-      setFlights(data.flights || []);
+      setPlanes(data.planes || []);
     } catch (e) {
       console.error("Map page fetch error:", e);
     } finally {
@@ -47,35 +31,35 @@ const MapPage = () => {
   };
 
   useEffect(() => {
-    fetchFlights();
-    const interval = setInterval(fetchFlights, 15000);
+    fetchLivePlanes();
+    const interval = setInterval(fetchLivePlanes, 15000);
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="px-6 py-12 max-w-7xl mx-auto">
+    <div className="px-6 py-10 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-          <span>Live Flight Map</span>
-          <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-medium flex items-center gap-1.5 animate-pulse">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span> Live Radar
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+          <span>Live Global Air Traffic Radar</span>
+          <span className="text-xs px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 border border-yellow-500/40 font-mono font-medium flex items-center gap-1.5 animate-pulse">
+            <span className="w-2 h-2 rounded-full bg-yellow-400"></span> Real-Time Sky Stream
           </span>
         </h1>
-        <p className="text-gray-400 text-sm mt-1">
-          Real-time aircraft positions showing active domestic and international flights in the air.
+        <p className="text-gray-400 text-xs sm:text-sm mt-1">
+          Showing real airborne aircraft flying in the sky right now across domestic and international flight corridors.
         </p>
       </div>
 
       {/* Map Container */}
       <div className="w-full">
-        {loading && flights.length === 0 ? (
-          <div className="h-[650px] w-full rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-gray-400">
-            <div className="animate-spin h-8 w-8 border-2 border-sky-400 border-t-transparent rounded-full mb-3"></div>
-            <span>Loading Flight Map...</span>
+        {loading && planes.length === 0 ? (
+          <div className="h-[720px] w-full rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center text-gray-400">
+            <div className="animate-spin h-8 w-8 border-2 border-yellow-400 border-t-transparent rounded-full mb-3"></div>
+            <span>Loading Real Airborne Flight Radar...</span>
           </div>
         ) : (
-          <FlightMap flights={flights} />
+          <FlightMap planes={planes} />
         )}
       </div>
     </div>
